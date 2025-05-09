@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\PortfolioExporter;
 use App\Filament\Resources\PortfolioResource\Pages;
 use App\Models\Category;
 use App\Models\Portfolio;
@@ -12,8 +13,11 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class PortfolioResource extends Resource
 {
@@ -22,46 +26,71 @@ class PortfolioResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-        ->schema([
+        $user = Filament::auth()->user();
+        $isMahasiswa = $user->hasRole('mahasiswa');
+        $isProdi = $user->hasRole('prodi');
+
+        $formSchema = [
             Forms\Components\TextInput::make('nama_kegiatan')
                 ->required()
-                ->maxLength(255),
+                ->maxLength(255)
+                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
 
             Forms\Components\DatePicker::make('tanggal_kegiatan')
                 ->label('Tanggal Kegiatan')
-                ->required(),
+                ->required()
+                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
 
             // 1. Pilih Kegiatan
             Forms\Components\Select::make('kegiatan')
                 ->label('Kegiatan')
-                ->options(fn () => Category::query()
-                    ->select('kegiatan')
+                ->options(fn() => Category::query()
+                    ->select('id', 'kegiatan')
                     ->distinct()
                     ->pluck('kegiatan', 'kegiatan'))
                 ->required()
                 ->reactive()
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->disabled($isProdi)
+                ->afterStateHydrated(function ($component, $get) {
+                    $kategori_id = $get('kategori_id');
+                    $category = Category::find($kategori_id);
+                    $component->state($category ? $category->kegiatan : null);
+                })
+                ->afterStateUpdated(function (Get $get, Set $set) {
+                    $set('tingkat_kegiatan', null);
+                    $set('peran_prestasi', null);
+                    $set('poin', null);
+                }),
 
             // 2. Pilih Tingkat
             Forms\Components\Select::make('tingkat_kegiatan')
                 ->label('Tingkat Kegiatan')
-                ->options(fn (Get $get) => Category::query()
+                ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->select('tingkat_kegiatan')
                     ->distinct()
                     ->pluck('tingkat_kegiatan', 'tingkat_kegiatan'))
                 ->required()
                 ->reactive()
-                ->disabled(fn (Get $get) => blank($get('kegiatan')))
+                ->disabled(fn(Get $get) => blank($get('kegiatan')) || $isProdi) // Disable for Prodi
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->afterStateHydrated(function ($component, $get) {
+                    $kategori_id = $get('kategori_id');
+                    $category = Category::find($kategori_id);
+                    $component->state($category ? $category->tingkat_kegiatan : null);
+                })
+                ->afterStateUpdated(function (Get $get, Set $set) {
+                    $set('peran_prestasi', null);
+                    $set('poin', null);
+                }),
 
             // 3. Pilih Peran / Prestasi
             Forms\Components\Select::make('peran_prestasi')
                 ->label('Peran / Prestasi')
-                ->options(fn (Get $get) => Category::query()
+                ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->where('tingkat_kegiatan', $get('tingkat_kegiatan'))
                     ->select('peran_prestasi')
@@ -69,7 +98,12 @@ class PortfolioResource extends Resource
                     ->pluck('peran_prestasi', 'peran_prestasi'))
                 ->required()
                 ->reactive()
-                ->disabled(fn (Get $get) => blank($get('tingkat_kegiatan')))
+                ->disabled(fn(Get $get) => blank($get('tingkat_kegiatan')) || $isProdi) // Disable for Prodi
+                ->afterStateHydrated(function ($component, $get) {
+                    $kategori_id = $get('kategori_id');
+                    $category = Category::find($kategori_id);
+                    $component->state($category ? $category->peran_prestasi : null);
+                })
                 ->afterStateUpdated(function (Get $get, Set $set) {
                     $category = Category::where('kegiatan', $get('kegiatan'))
                         ->where('tingkat_kegiatan', $get('tingkat_kegiatan'))
@@ -87,7 +121,12 @@ class PortfolioResource extends Resource
             // 4. Otomatis dari pilihan di atas
             Forms\Components\TextInput::make('poin')
                 ->label('Poin')
-                ->disabled()
+                ->afterStateHydrated(function ($component, $get) {
+                    $kategori_id = $get('kategori_id');
+                    $category = Category::find($kategori_id);
+                    $component->state($category ? $category->poin : null);
+                })
+                ->disabled() // Always disabled, calculated field
                 ->required(),
 
             Forms\Components\Select::make('jenis_pencapaian')
@@ -95,7 +134,28 @@ class PortfolioResource extends Resource
                 ->options([
                     'Akademik' => 'Akademik',
                     'Non-Akademik' => 'Non-Akademik',
-                ]),
+                ])
+                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
+
+            Forms\Components\FileUpload::make('file_path')
+                ->label('Upload PDF')
+                ->disk('public') // pastikan 'public' sesuai dengan disk di config/filesystems.php
+                ->directory(function ($get) {
+                    $userId = $get('user_id');
+                    $user = \App\Models\User::find($userId);
+                    $nim_nip = $user?->nim_nip ?? 'unknown';
+                    return "portofolio/{$nim_nip}";
+                })
+                ->visibility('public')
+                ->acceptedFileTypes(['application/pdf'])
+                ->maxSize(2048)
+                ->getUploadedFileNameForStorageUsing(function ($file, $get) {
+                    $extension = $file->getClientOriginalExtension();
+                    $timestamp = time();  // Current Unix timestamp
+                    return "{$timestamp}.{$extension}";
+                })
+                ->required()
+                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
 
             // Hidden: kategori_id untuk disimpan
             Forms\Components\Hidden::make('kategori_id')->required(),
@@ -103,64 +163,84 @@ class PortfolioResource extends Resource
             Forms\Components\Hidden::make('user_id')
                 ->default(auth()->id())
                 ->required(),
-        ]);
-        
+
+            // Feedback and Status, editable for Prodi only
+            Forms\Components\Select::make('status')
+                ->label('Status')
+                ->options([
+                    'revise' => 'Revise',
+                    'on-review' => 'On Review',
+                    'accepted' => 'Accepted',
+                ])
+                ->required()
+                ->visible(!$isMahasiswa), // Disabled for Mahasiswa
+
+            Forms\Components\TextArea::make('feedback')
+                ->label('Feedback')
+                ->required()
+                ->visible(!$isMahasiswa), // Disabled for Mahasiswa
+        ];
+
+        return $form->schema($formSchema);
     }
 
     public static function table(Table $table): Table
-{
-    $user = Filament::auth()->user();
-    $isMahasiswa = $user->hasRole('Mahasiswa');
+    {
+        $user = Filament::auth()->user();
+        $isMahasiswa = $user->hasRole('mahasiswa');
+        $isProdi = $user->hasRole('prodi');
 
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('user.name')
-                ->label('User')
-                ->sortable()
-                ->visible(!$isMahasiswa),
-            Tables\Columns\TextColumn::make('nama_kegiatan')
-                ->label('Nama Kegiatan')
-                ->searchable(),
-            Tables\Columns\TextColumn::make('kategori.kegiatan')
-                ->label('Kegiatan')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('kategori.tingkat_kegiatan')
-                ->label('Tingkat Kegiatan')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('kategori.peran_prestasi')
-                ->label('Peran / Prestasi')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('tanggal_kegiatan')
-                ->label('Tanggal Kegiatan')
-                ->date()
-                ->sortable(),
-            Tables\Columns\TextColumn::make('jenis_pencapaian')
-                ->label('Jenis Pencapaian')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('kategori.poin')
-                ->label('Poin')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('created_at')
-                ->label('Dibuat')
-                ->dateTime()
-                ->sortable(),
-        ])
-        ->filters([
-            //
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\DeleteBulkAction::make(),
-        ]);
-}
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('User')
+                    ->sortable()
+                    ->visible($isProdi), // Only visible for Prodi
+                Tables\Columns\TextColumn::make('nama_kegiatan')
+                    ->label('Nama Kegiatan')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('category.poin')
+                    ->label('Poin')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('feedback')
+                    ->label('Feedback')
+                    ->searchable(),
+            ])
+            ->filters([])
+            ->actions([
+                Tables\Actions\EditAction::make()->visible($isProdi)
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('Generate Portfolio')
+                    ->color('gray')
+                    ->url(fn() => route('download.portfolio'))
+                    ->openUrlInNewTab(),
+                ExportAction::make()->exporter(PortfolioExporter::class)->visible($isProdi)
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $user = Filament::auth()->user();
+
+        // If 'Prodi', show all data
+        if ($user->hasRole('prodi')) {
+            return parent::getEloquentQuery();
+        }
+
+        // If 'Mahasiswa', show only their data
+        return parent::getEloquentQuery()->where('user_id', $user->id);
+    }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -170,18 +250,5 @@ class PortfolioResource extends Resource
             'create' => Pages\CreatePortfolio::route('/create'),
             'edit' => Pages\EditPortfolio::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $user = Filament::auth()->user();
-
-        // Jika Prodi, tampilkan semua data
-        if ($user->hasRole('prodi')) {
-            return parent::getEloquentQuery();
-        }
-
-        // Kalau bukan Prodi (termasuk mahasiswa), tampilkan data miliknya saja
-        return parent::getEloquentQuery()->where('user_id', $user->id);
     }
 }

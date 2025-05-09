@@ -47,19 +47,22 @@ class KhsResource extends Resource
             Forms\Components\FileUpload::make('file_path')
                 ->label('Upload PDF')
                 ->disk('public') // pastikan 'public' sesuai dengan disk di config/filesystems.php
-                ->directory('khs') // folder penyimpanan
-                ->visibility('public')
-                ->acceptedFileTypes(['application/pdf'])
-                ->getUploadedFileNameForStorageUsing(function ($file, $get) {
-                    $userId = $get('user_id'); // ambil user_id dari form
-                    $semester = $get('semester'); // ambil semester dari form
-
+                ->directory(function ($get) {
+                    $userId = $get('user_id');
                     $user = \App\Models\User::find($userId);
                     $nim_nip = $user?->nim_nip ?? 'unknown';
-
+            
+                    // Return nested directory path
+                    return "khs/{$nim_nip}";
+                })
+                ->visibility('public')
+                ->acceptedFileTypes(['application/pdf'])
+                ->maxSize(2048)
+                ->getUploadedFileNameForStorageUsing(function ($file, $get) {
+                    $semester = $get('semester'); // ambil semester dari form
                     $extension = $file->getClientOriginalExtension();
 
-                    return "{$nim_nip}_{$semester}.{$extension}";
+                    return "{$semester}.{$extension}";
                 })
                 ->required(),
         ]);
@@ -98,7 +101,7 @@ class KhsResource extends Resource
 
                         $url = Storage::disk('public')->url($record->file_path);
 
-                        return new HtmlString("<a href='{$url}' target='_blank' class='text-primary-600 hover:underline'>Download PDF</a>");
+                        return new HtmlString("<a href='{$url}' target='_blank' class='text-primary-600 hover:underline'>View PDF</a>");
                     }),
             ])
             ->filters([

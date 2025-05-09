@@ -14,9 +14,9 @@ class Portfolio extends Model
     /**
      * Relasi ke kategori (Category)
      */
-    public function kategori()
+    public function category()
     {
-        return $this->belongsTo(Category::class, 'kategori_id');
+        return $this->belongsTo(Category::class, "kategori_id");
     }
 
     /**
