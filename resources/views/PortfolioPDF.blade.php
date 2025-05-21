@@ -77,7 +77,7 @@
             </tr>
             <tr>
                 <td>1.1 Nama Lengkap (Full Name)</td>
-                <td>Hu Tao</td>
+                <td>Tes</td>
             </tr>
             <tr>
                 <td>1.2 Nomor Induk Mahasiswa (Student Identification Number)</td>

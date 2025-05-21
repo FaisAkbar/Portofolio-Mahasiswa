@@ -6,29 +6,35 @@ use App\Filament\Exports\PortfolioExporter;
 use App\Filament\Resources\PortfolioResource\Pages;
 use App\Models\Category;
 use App\Models\Portfolio;
+use Filament\Actions\ActionGroup as ActionsActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 class PortfolioResource extends Resource
 {
     protected static ?string $model = Portfolio::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Portofolio';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationGroup = 'Data Mahasiswa';
 
     public static function form(Form $form): Form
     {
         $user = Filament::auth()->user();
         $isMahasiswa = $user->hasRole('mahasiswa');
-        $isProdi = $user->hasRole('prodi');
+        $isProdi = $user->hasRole('prodi') || $user->hasRole('super_admin');
 
         $formSchema = [
             Forms\Components\TextInput::make('nama_kegiatan')
@@ -188,16 +194,21 @@ class PortfolioResource extends Resource
     {
         $user = Filament::auth()->user();
         $isMahasiswa = $user->hasRole('mahasiswa');
-        $isProdi = $user->hasRole('prodi');
+        $isProdi = $user->hasRole('prodi') || $user->hasRole('super_admin');
 
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('User')
+                    ->searchable()
                     ->sortable()
                     ->visible($isProdi), // Only visible for Prodi
                 Tables\Columns\TextColumn::make('nama_kegiatan')
                     ->label('Nama Kegiatan')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('jenis_pencapaian')
+                    ->label('Jenis Pencapaian')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.poin')
                     ->label('Poin')
@@ -208,10 +219,54 @@ class PortfolioResource extends Resource
                 Tables\Columns\TextColumn::make('feedback')
                     ->label('Feedback')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('tanggal_kegiatan')
+                    ->label('Tanggal Kegiatan')
+                    ->searchable(),
+                // Tables\Columns\TextColumn::make('file_path')
+                //     ->label('File PDF')
+                //     ->getStateUsing(fn($record) => basename($record->file_path))
+                //     ->formatStateUsing(function ($state, $record) {
+                //         if (!$record->file_path) {
+                //             return new HtmlString('-');
+                //         }
+
+                //         $url = Storage::disk('public')->url($record->file_path);
+
+                //         return new HtmlString("<a href='{$url}' target='_blank' class='text-primary-600 hover:underline'>View PDF</a>");
+                //     }),
             ])
-            ->filters([])
+            ->filters([
+                // Adding a filter for 'status' column
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'revise' => 'Revise',
+                        'on-review' => 'On Review',
+                        'accepted' => 'Accepted',
+                    ])
+                    ->multiple(),
+                Tables\Filters\SelectFilter::make('jenis_pencapaian')
+                    ->options([
+                        'Akademik' => 'Akademik',
+                        'Non-Akademik' => 'Non Akademik',
+                    ])
+                    ->multiple()
+            ])
             ->actions([
-                Tables\Actions\EditAction::make()->visible($isProdi)
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->url(fn($record) => Storage::disk('public')->url($record->file_path))
+                        ->openUrlInNewTab()
+                        ->label('View PDF')
+                        ->icon('heroicon-o-eye'),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+                    ->label('More actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button()
             ])
             ->headerActions([
                 Tables\Actions\Action::make('Generate Portfolio')
@@ -222,7 +277,8 @@ class PortfolioResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+            ->recordUrl(null);
     }
 
     public static function getEloquentQuery(): Builder
@@ -230,7 +286,7 @@ class PortfolioResource extends Resource
         $user = Filament::auth()->user();
 
         // If 'Prodi', show all data
-        if ($user->hasRole('prodi')) {
+        if ($user->hasRole('prodi') || $user->hasRole('super_admin')) {
             return parent::getEloquentQuery();
         }
 

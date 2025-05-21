@@ -9,4 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateKhs extends CreateRecord
 {
     protected static string $resource = KhsResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
