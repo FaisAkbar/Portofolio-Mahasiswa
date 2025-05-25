@@ -21,8 +21,6 @@ class RoleSeeder extends Seeder
         $spreadsheet = IOFactory::load($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
         $rows = $worksheet->toArray(null, true, true, true);
-
-        // Mulai dari baris ke-2 (skip header)
         foreach (array_slice($rows, 1) as $row) {
             $name = trim($row['A']);
 

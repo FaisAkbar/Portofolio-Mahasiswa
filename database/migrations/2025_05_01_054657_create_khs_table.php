@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('khs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relasi ke users
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('semester');
-            $table->decimal('ip_semester', 3, 2); // Misal: 3 digit total, 2 desimal (contoh: 3.75)
-            $table->string('file_path'); // Untuk menyimpan path file PDF
+            $table->decimal('ip_semester', 3, 2);
+            $table->string('file_path');
             $table->timestamps();
         });
     }

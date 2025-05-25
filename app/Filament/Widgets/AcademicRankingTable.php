@@ -19,30 +19,22 @@ class AcademicRankingTable extends BaseWidget
 
     public function table(Tables\Table $table): Tables\Table
     {
-        // Retrieve the filters from the request (if they exist)
         $yearCode = $this->filters['year_code'] ?? null;
         $prodiCode = $this->filters['prodi_code'] ?? null;
 
-        $query = User::role('mahasiswa') // Filter users with the 'mahasiswa' role
-            ->select('users.id', 'users.name') // Select the required columns from users table
-            ->leftJoin('portfolios', 'portfolios.user_id', '=', 'users.id') // LEFT JOIN to include users with no portfolios
-            ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id'); // LEFT JOIN to include categories
-
-        // Add filters only if the user has the 'prodi' role
+        $query = User::role('mahasiswa')
+            ->select('users.id', 'users.name')
+            ->leftJoin('portfolios', 'portfolios.user_id', '=', 'users.id')
+            ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id');
         if (auth()->user()->hasRole('prodi')) {
-            // Apply the year_code filter if it exists
             if ($yearCode) {
                 $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
             }
-
-            // Apply the prodi_code filter if it exists
             if ($prodiCode) {
-                $year = substr($prodiCode, 0, 2);  // Get the first 2 digits of prodiCode for year check
+                $year = substr($prodiCode, 0, 2);
                 if ((int)$year >= 24) {
-                    // If the year is 24 or above, the prodi code starts at position 6 (index 5)
                     $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
                 } else {
-                    // If the year is < 24, the prodi code starts at position 4 (index 3)
                     $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
                 }
             }
@@ -53,11 +45,9 @@ class AcademicRankingTable extends BaseWidget
                     WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin 
                     ELSE 0 
                 END), 0) as total_points
-            ') // First set points to 0 for all users, then sum categories.poin for accepted portfolios
-            ->groupBy('users.id', 'users.name') // Group by user ID and name to calculate total points for each user
-            ->orderByDesc('total_points'); // Order by total points in descending order
-
-        // Return the table with the query
+            ')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('total_points');
         return $table->query($query)
             ->columns([
                 Tables\Columns\TextColumn::make('index')
@@ -67,7 +57,7 @@ class AcademicRankingTable extends BaseWidget
                         return ++$index;
                     }),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_points')
                     ->label('Total Points')

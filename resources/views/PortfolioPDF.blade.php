@@ -1,133 +1,290 @@
+<?php
+$image = "/images/logo.png";
+$ttd = "/images/ttdd.png";
+$formatter = new \IntlDateFormatter(
+    'id_ID',
+    \IntlDateFormatter::LONG,
+    \IntlDateFormatter::NONE,
+    'Asia/Jakarta',
+    \IntlDateFormatter::GREGORIAN,
+    'd MMMM yyyy'
+);
+$currentDate = $formatter->format(new \DateTime());
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diploma Supplement Certificate</title>
+    <title>Portofolio Mahasiswa - Politeknik Negeri Malang</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: white;
+            color: black;
+            line-height: 1.4;
             margin: 0;
             padding: 0;
         }
-        .container {
+
+        @page {
+            margin: 15mm 15mm 20mm 15mm;
+            @top-center {
+                content: element(running-header);
+            }
+        }
+
+        @page:first {
+            margin: 5mm 15mm 20mm 15mm;
+            @top-center {
+                content: element(running-header);
+            }
+        }
+
+        .running-header {
+            position: running(running-header);
             width: 100%;
-            margin: 0 auto;
-            padding: 20px;
+            border-bottom: 3px solid #000;
         }
-        .header {
-            text-align: center;
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            display: block;
+            margin-right: 10px;
         }
-        .header img {
-            max-width: 150px;
-            margin-bottom: 20px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .sub-header {
-            text-align: center;
+
+        .header-text {
             font-weight: bold;
-            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.3;
+            text-align: center;
         }
-        .section {
-            margin-top: 30px;
+
+        .header-text .ministry {
+            font-size: 16px;
         }
-        .section h2 {
+
+        .header-text .institution {
+            font-size: 15px;
+        }
+
+        .header-text .department {
+            font-size: 14px;
+        }
+
+        .contact-info {
+            font-size: 11px;
+            line-height: 1.2;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 10px;
+        }
+
+        .title {
+            text-align: center;
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 10px;
+            text-decoration: underline;
+            page-break-after: avoid;
+            margin-bottom: 0.5em;
         }
-        .table {
+
+        .student-info {
+            margin-bottom: 30px;
+            font-size: 13px;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+        }
+
+        .student-info table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
-        .table td {
-            padding: 8px;
-            border: 1px solid #ddd;
+
+        .student-info td {
+            padding: 3px 0;
+            vertical-align: top;
         }
-        .table th {
-            padding: 8px;
+
+        .student-info .label {
+            width: 150px;
+            font-weight: bold;
+        }
+
+        .student-info .colon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            page-break-after: avoid;
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            page-break-inside: auto;
+        }
+
+        .activity-table thead {
+            display: table-header-group;
+        }
+
+        .activity-table tbody {
+            display: table-row-group;
+        }
+
+        .activity-table th,
+        .activity-table td {
+            border: 1px solid #000;
+            padding: 8px 5px;
             text-align: left;
-            border: 1px solid #ddd;
-            background-color: #f4f4f4;
+            vertical-align: top;
+            page-break-inside: avoid;
         }
+
+        .activity-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            text-align: center;
+            page-break-after: avoid;
+        }
+
+        .final-table {
+            width: 100%;
+            text-align: right;
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .final-table td {
+            border: none;
+        }
+
+        img.tanda-tangan {
+            width: 150px;
+            height: 150px;
+            margin-top: 10px;
+        }
+
     </style>
 </head>
-<body>
 
-<div class="container">
-    <div class="header">
-        <img src="dummy-image.jpg" alt="Institution Logo">
-        <h1>Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi</h1>
-        <h1>POLITEKNIK NEGERI MALANG</h1>
-        <h1>STATE POLYTECHNIC OF MALANG</h1>
-        <div class="sub-header">
-            <h2>SURAT KETERANGAN PENDAMPING IJAZAH</h2>
-            <h2>Diploma Supplement Certificate</h2>
+<body>
+    <div class="running-header">
+        <table width="100%">
+            <tr>
+                <td width="100px" style="text-align: center;">
+                    <img src="{{ public_path() . $image }}" class="logo" alt="Logo Polinema">
+                </td>
+                <td>
+                    <div class="header-text">
+                        <div class="ministry">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI</div>
+                        <div class="institution">POLITEKNIK NEGERI MALANG</div>
+                        <div class="department">JURUSAN TEKNOLOGI INFORMASI</div>
+                        <div class="contact-info">
+                            Jalan Soekarno-Hatta No.9 Jatimulyo, Lowokwaru, Malang, 65141<br>
+                            Telepon (0341) 404424 - 404425, Fax (0341) 404420,<br>
+                            https://www.polinema.ac.id
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="container">
+        <div class="title">PORTOFOLIO MAHASISWA</div>
+
+        <div class="student-info">
+            <table>
+                <tr>
+                    <td class="label">Nama Mahasiswa</td>
+                    <td class="colon">:</td>
+                    <td><?= $user->name ?></td>
+                </tr>
+                <tr>
+                    <td class="label">NIM</td>
+                    <td class="colon">:</td>
+                    <td><?= $user->nim_nip ?></td>
+                </tr>
+                <tr>
+                    <td class="label">Program Studi</td>
+                    <td class="colon">:</td>
+                    <td><?= $prodiName ?></td>
+                </tr>
+                <tr>
+                    <td class="label">IPK</td>
+                    <td class="colon">:</td>
+                    <td><?= $ipk ?></td>
+                </tr>
+            </table>
+        </div>
+
+        @php $alphabet = range('A', 'Z'); @endphp
+
+        @foreach ($usedKegiatans as $index => $kegiatan)
+            <div class="section">
+                <div class="section-title">{{ $alphabet[$index] }}. {{ $kegiatan }}</div>
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th class="no-col">No</th>
+                                <th>Nama Kegiatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $items = $portfolios->where('category.kegiatan', $kegiatan)->values();
+                                $maxRows = max(1, $items->count());
+                            @endphp
+
+                            @for ($i = 0; $i < $maxRows; $i++)
+                                <tr>
+                                    <td class="row-number">{{ $i + 1 }}</td>
+                                    <td>{{ $items[$i]->nama_kegiatan ?? '' }}</td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+            </div>
+        @endforeach
+
+        <div class="section">
+            <table class="final-table">
+                <tr>
+                    <td>Malang, <?= $currentDate ?></td>
+                </tr>
+                <tr>
+                    <td><img src="{{ public_path() . $ttd }}" alt="Tanda Tangan" class="tanda-tangan"></td>
+                </tr>
+                <tr>
+                    <td><u>Fawaa'el Akbar Firdaus</u></td>
+                </tr>
+                <tr>
+                    <td>NIP. 2141720215</td>
+                </tr>
+            </table>
         </div>
     </div>
-
-    <div class="section">
-        <table class="table">
-            <tr>
-                <th colspan="2">1. INFORMASI TENTANG IDENTITAS DIRI PEMEGANG SKPI</th>
-            </tr>
-            <tr>
-                <td>1.1 Nama Lengkap (Full Name)</td>
-                <td>Tes</td>
-            </tr>
-            <tr>
-                <td>1.2 Nomor Induk Mahasiswa (Student Identification Number)</td>
-                <td>2041720022</td>
-            </tr>
-            <tr>
-                <td>1.3 Tempat dan Tanggal Lahir (Place and Date of Birth)</td>
-                <td>Malang, November 14, 2002</td>
-            </tr>
-            <tr>
-                <td>1.4 Tanggal Masuk (Date of Admission)</td>
-                <td>August 31, 2020</td>
-            </tr>
-            <tr>
-                <td>1.5 Tanggal Kelulusan (Date of Graduation)</td>
-                <td>July 31, 2024</td>
-            </tr>
-            <tr>
-                <td>1.6 Nomor Ijazah (Certificate Number)</td>
-                <td>0500253531020140048</td>
-            </tr>
-            <tr>
-                <td>1.7 Gelar/Sebutan Lulusan (Academic Degree)</td>
-                <td>Sarjana Terapan Komputer (S.Tr.Kom.)</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="section">
-        <table class="table">
-            <tr>
-                <th colspan="2">XX. Portfolios</th>
-            </tr>
-            @foreach($portfolios as $portfolio)
-            <tr>
-                <td>Nama Kegiatan</td>
-                <td>{{ $portfolio->nama_kegiatan }}</td>
-            </tr>
-            <tr>
-                <td>Kategori</td>
-                <td>{{ $portfolio->category->kegiatan }}</td>
-            </tr>
-            <tr>
-                <td>Poin</td>
-                <td>{{ $portfolio->category->poin }}</td>
-            </tr>
-            @endforeach
-        </table>
-    </div>
-</div>
-
 </body>
 </html>

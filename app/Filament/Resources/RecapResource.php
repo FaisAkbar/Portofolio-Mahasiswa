@@ -31,7 +31,7 @@ class RecapResource extends Resource
     protected static ?string $model = Recap::class;
     protected static ?string $navigationLabel = 'Recap';
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    protected static ?string $navigationGroup = 'Data Mahasiswa';
+    protected static ?string $navigationGroup = 'Student Data';
 
     public static function getLabel(): string
     {
@@ -46,40 +46,36 @@ class RecapResource extends Resource
             ]);
     }
 
-    // Custom query to include calculated fields and allow sorting
     public static function getEloquentQuery(): Builder
     {
-        // Base query for selecting users with the 'mahasiswa' role
-        $query = User::role('mahasiswa') // Filter users with the 'mahasiswa' role
-            ->select('users.id', 'users.name', 'users.nim_nip') // Explicitly select the columns from users table
 
-            // Subquery for calculating IPK (GPA)
+        $query = User::role('mahasiswa')
+            ->select('users.id', 'users.name', 'users.nim_nip')
+
             ->addSelect([
                 'total_nilai' => KHS::selectRaw('SUM(khs.ip_semester)')
                     ->whereColumn('khs.user_id', 'users.id')
-                    ->limit(1), // Only one value per user
+                    ->limit(1),
                 'total_khs' => KHS::selectRaw('COUNT(khs.id)')
                     ->whereColumn('khs.user_id', 'users.id')
-                    ->limit(1), // Only one value per user
+                    ->limit(1),
                 'ipk' => KHS::selectRaw('IF(COUNT(khs.id) > 0, SUM(khs.ip_semester) / COUNT(khs.id), 0)')
                     ->whereColumn('khs.user_id', 'users.id')
-                    ->limit(1), // Only one value per user
+                    ->limit(1),
             ])
 
-            // Subquery for calculating Academic Points (Default to 0 if no portfolio exists)
             ->addSelect([
                 'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points') 
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
-                    ->limit(1), // Only one value per user
+                    ->limit(1),
             ])
 
-            // Subquery for calculating Non-Academic Points (Default to 0 if no portfolio exists)
             ->addSelect([
                 'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
-                    ->limit(1), // Only one value per user
+                    ->limit(1),
             ]);
 
         return $query;
@@ -97,28 +93,23 @@ class RecapResource extends Resource
                 Tables\Columns\TextColumn::make('nim_nip')
                     ->label('NIM/NIP')
                     ->sortable(),
-                
-                // IPK Calculation is done in the query
+
                 Tables\Columns\TextColumn::make('ipk')
                     ->label('IPK')
                     ->sortable()
                     ->numeric(decimalPlaces: 2),
 
-                // Academic Points Calculation is done in the query
                 Tables\Columns\TextColumn::make('academic_points')
                     ->label('Academic Points')
                     ->sortable(),
 
-                // Non-Academic Points Calculation is done in the query
                 Tables\Columns\TextColumn::make('non_academic_points')
                     ->label('Non-Academic Points')
                     ->sortable(),
             ])
             ->filters([
-                // Year Code Filter
                 SelectFilter::make('year_code')
                     ->options(function () {
-                        // Dynamically get unique year codes from nim_nip (first 2 digits)
                         return User::selectRaw('DISTINCT SUBSTRING(nim_nip, 1, 2) as year_code')
                             ->role('mahasiswa')
                             ->pluck('year_code', 'year_code')
@@ -126,48 +117,32 @@ class RecapResource extends Resource
                             ->toArray();
                     })
                     ->query(function (Builder $query, $data) {
-                        // Check if $data is null, empty, or set to "All" (empty string)
                         if (empty($data['value']) || $data['value'] === '') {
-                            return $query;  // No filter applied, show all records
+                            return $query;
                         }
 
-                        // Apply the filter by the first 2 digits of nim_nip if $data is set
                         return $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$data['value']]);
                     }),
 
-                // Prodi Code Filter
-                // Define the custom filter for prodi_code
                 SelectFilter::make('prodi_code')
                     ->label('Prodi Code')
                     ->options(function () {
-                        // Fetch all prodi codes and names from the prodis table
                         $prodis = Prodi::all();
                         $options = [];
-
-                        // Format the options as 'prodi_code - prodi_name'
                         foreach ($prodis as $prodi) {
                             $options[$prodi->prodi_code] = $prodi->prodi_code . ' - ' . $prodi->prodi_name;
                         }
 
                         return $options;
                     })->query(function (Builder $query, $data) {
-                        // Check if $data is null, empty, or set to "All" (empty string)
                         if (empty($data['value']) || $data['value'] === '') {
-                            return $query;  // No filter applied, show all records
+                            return $query;
                         }
-
-                        // Extract the prodi code from the value
                         $prodiCode = $data['value'];
-
-                        // Check the year (first 2 digits of nim_nip)
                         $year = substr($prodiCode, 0, 2);
-
-                        // Determine the starting position for extracting prodi code
                         if ((int)$year >= 24) {
-                            // If year is 24 or above, the prodi code starts from the 6th character (index 5)
                             return $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
                         } else {
-                            // If year is 23 or below, the prodi code starts from the 4th character (index 3)
                             return $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
                         }
                     }), 

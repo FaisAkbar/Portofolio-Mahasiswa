@@ -28,7 +28,7 @@ class PortfolioResource extends Resource
     protected static ?string $model = Portfolio::class;
     protected static ?string $navigationLabel = 'Portofolio';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Data Mahasiswa';
+    protected static ?string $navigationGroup = 'Student Data';
 
     public static function form(Form $form): Form
     {
@@ -38,18 +38,18 @@ class PortfolioResource extends Resource
 
         $formSchema = [
             Forms\Components\TextInput::make('nama_kegiatan')
+                ->label('Event Name')
                 ->required()
                 ->maxLength(255)
-                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
+                ->disabled($isProdi),
 
             Forms\Components\DatePicker::make('tanggal_kegiatan')
-                ->label('Tanggal Kegiatan')
+                ->label('Event Date')
                 ->required()
-                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
+                ->disabled($isProdi),
 
-            // 1. Pilih Kegiatan
             Forms\Components\Select::make('kegiatan')
-                ->label('Kegiatan')
+                ->label('Event')
                 ->options(fn() => Category::query()
                     ->select('id', 'kegiatan')
                     ->distinct()
@@ -70,9 +70,8 @@ class PortfolioResource extends Resource
                     $set('poin', null);
                 }),
 
-            // 2. Pilih Tingkat
             Forms\Components\Select::make('tingkat_kegiatan')
-                ->label('Tingkat Kegiatan')
+                ->label('Level of Event')
                 ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->select('tingkat_kegiatan')
@@ -80,7 +79,7 @@ class PortfolioResource extends Resource
                     ->pluck('tingkat_kegiatan', 'tingkat_kegiatan'))
                 ->required()
                 ->reactive()
-                ->disabled(fn(Get $get) => blank($get('kegiatan')) || $isProdi) // Disable for Prodi
+                ->disabled(fn(Get $get) => blank($get('kegiatan')) || $isProdi)
                 ->searchable()
                 ->preload()
                 ->afterStateHydrated(function ($component, $get) {
@@ -93,9 +92,8 @@ class PortfolioResource extends Resource
                     $set('poin', null);
                 }),
 
-            // 3. Pilih Peran / Prestasi
             Forms\Components\Select::make('peran_prestasi')
-                ->label('Peran / Prestasi')
+                ->label('Role')
                 ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->where('tingkat_kegiatan', $get('tingkat_kegiatan'))
@@ -104,7 +102,7 @@ class PortfolioResource extends Resource
                     ->pluck('peran_prestasi', 'peran_prestasi'))
                 ->required()
                 ->reactive()
-                ->disabled(fn(Get $get) => blank($get('tingkat_kegiatan')) || $isProdi) // Disable for Prodi
+                ->disabled(fn(Get $get) => blank($get('tingkat_kegiatan')) || $isProdi)
                 ->afterStateHydrated(function ($component, $get) {
                     $kategori_id = $get('kategori_id');
                     $category = Category::find($kategori_id);
@@ -124,28 +122,28 @@ class PortfolioResource extends Resource
                 ->searchable()
                 ->preload(),
 
-            // 4. Otomatis dari pilihan di atas
             Forms\Components\TextInput::make('poin')
-                ->label('Poin')
+                ->label('Points')
                 ->afterStateHydrated(function ($component, $get) {
                     $kategori_id = $get('kategori_id');
                     $category = Category::find($kategori_id);
                     $component->state($category ? $category->poin : null);
                 })
-                ->disabled() // Always disabled, calculated field
+                ->disabled()
                 ->required(),
 
             Forms\Components\Select::make('jenis_pencapaian')
+                ->label('Type of Achievement')
                 ->required()
                 ->options([
                     'Akademik' => 'Akademik',
                     'Non-Akademik' => 'Non-Akademik',
                 ])
-                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
+                ->disabled($isProdi),
 
             Forms\Components\FileUpload::make('file_path')
                 ->label('Upload PDF')
-                ->disk('public') // pastikan 'public' sesuai dengan disk di config/filesystems.php
+                ->disk('public')
                 ->directory(function ($get) {
                     $userId = $get('user_id');
                     $user = \App\Models\User::find($userId);
@@ -157,20 +155,18 @@ class PortfolioResource extends Resource
                 ->maxSize(2048)
                 ->getUploadedFileNameForStorageUsing(function ($file, $get) {
                     $extension = $file->getClientOriginalExtension();
-                    $timestamp = time();  // Current Unix timestamp
+                    $timestamp = time();
                     return "{$timestamp}.{$extension}";
                 })
                 ->required()
-                ->disabled($isProdi), // Disable for Prodi (readonly for Prodi)
+                ->disabled($isProdi),
 
-            // Hidden: kategori_id untuk disimpan
             Forms\Components\Hidden::make('kategori_id')->required(),
 
             Forms\Components\Hidden::make('user_id')
                 ->default(auth()->id())
                 ->required(),
 
-            // Feedback and Status, editable for Prodi only
             Forms\Components\Select::make('status')
                 ->label('Status')
                 ->options([
@@ -179,12 +175,12 @@ class PortfolioResource extends Resource
                     'accepted' => 'Accepted',
                 ])
                 ->required()
-                ->visible(!$isMahasiswa), // Disabled for Mahasiswa
+                ->visible(!$isMahasiswa),
 
             Forms\Components\TextArea::make('feedback')
                 ->label('Feedback')
                 ->required()
-                ->visible(!$isMahasiswa), // Disabled for Mahasiswa
+                ->visible(!$isMahasiswa),
         ];
 
         return $form->schema($formSchema);
@@ -199,19 +195,19 @@ class PortfolioResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('User')
+                    ->label('Name')
                     ->searchable()
                     ->sortable()
-                    ->visible($isProdi), // Only visible for Prodi
+                    ->visible($isProdi),
                 Tables\Columns\TextColumn::make('nama_kegiatan')
-                    ->label('Nama Kegiatan')
+                    ->label('Event')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_pencapaian')
-                    ->label('Jenis Pencapaian')
+                    ->label('Type of Achievement')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.poin')
-                    ->label('Poin')
+                    ->label('Points')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
@@ -220,7 +216,7 @@ class PortfolioResource extends Resource
                     ->label('Feedback')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal_kegiatan')
-                    ->label('Tanggal Kegiatan')
+                    ->label('Event Date')
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('file_path')
                 //     ->label('File PDF')
@@ -236,7 +232,6 @@ class PortfolioResource extends Resource
                 //     }),
             ])
             ->filters([
-                // Adding a filter for 'status' column
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'revise' => 'Revise',
@@ -284,13 +279,9 @@ class PortfolioResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $user = Filament::auth()->user();
-
-        // If 'Prodi', show all data
         if ($user->hasRole('prodi') || $user->hasRole('super_admin')) {
             return parent::getEloquentQuery();
         }
-
-        // If 'Mahasiswa', show only their data
         return parent::getEloquentQuery()->where('user_id', $user->id);
     }
 

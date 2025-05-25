@@ -21,7 +21,6 @@ class HistoryIPSChart extends ChartWidget
     protected function getData(): array
     {
         $user = auth()->user();
-        // For mahasiswa, get the KHS records of the current user
         $khsRecords = Khs::where('user_id', $user->id)
             ->orderBy('semester', 'asc')
             ->get();

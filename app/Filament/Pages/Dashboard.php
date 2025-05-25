@@ -21,11 +21,9 @@ class Dashboard extends \Filament\Pages\Dashboard
             ->schema([
                 Section::make('Filter Options')
                     ->schema([
-                        // Year Code Filter
                         Select::make('year_code')
                             ->label('Year Code')
                             ->options(function () {
-                                // Dynamically get unique year codes from nim_nip (first 2 digits)
                                 return User::selectRaw('DISTINCT SUBSTRING(nim_nip, 1, 2) as year_code')
                                     ->role('mahasiswa')
                                     ->pluck('year_code', 'year_code')
@@ -33,15 +31,11 @@ class Dashboard extends \Filament\Pages\Dashboard
                             })
                             ->placeholder('Select Year Code'),
 
-                        // Prodi Code Filter
                         Select::make('prodi_code')
                             ->label('Prodi Code')
                             ->options(function () {
-                                // Fetch all prodi codes and names from the prodis table
                                 $prodis = Prodi::all();
                                 $options = [];
-
-                                // Format the options as 'prodi_code - prodi_name'
                                 foreach ($prodis as $prodi) {
                                     $options[$prodi->prodi_code] = $prodi->prodi_code . ' - ' . $prodi->prodi_name;
                                 }
@@ -50,7 +44,7 @@ class Dashboard extends \Filament\Pages\Dashboard
                             })
                             ->placeholder('Select Prodi Code'),
                     ])
-                    ->columns(2), // Display the filters in three columns
+                    ->columns(2),
             ]);
     }
 }

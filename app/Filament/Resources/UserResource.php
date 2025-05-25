@@ -2,15 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\UserImporter;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -28,7 +31,7 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Nama')
+                    ->label('Name')
                     ->required(),
                 Forms\Components\TextInput::make('nim_nip')
                     ->label('NIM/NIP')
@@ -61,7 +64,7 @@ class UserResource extends Resource
 
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nim_nip')
@@ -89,6 +92,10 @@ class UserResource extends Resource
                     ->button()
 
             ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(UserImporter::class)
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -102,6 +109,17 @@ class UserResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $user = Filament::auth()->user();
+        if ($user->hasRole('prodi')) {
+            return User::whereHas('roles', function ($query) {
+                $query->where('name', 'mahasiswa');
+            });
+        }
+        return parent::getEloquentQuery();
     }
 
     public static function getPages(): array

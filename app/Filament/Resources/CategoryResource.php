@@ -27,24 +27,24 @@ class CategoryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('kegiatan')
-                    ->label('Kegiatan')
+                    ->label('Event')
                     ->required()
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('tingkat_kegiatan')
-                    ->label('Tingkat Kegiatan')
+                    ->label('Level of Event')
                     ->required()
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('peran_prestasi')
-                    ->label('Peran/Prestasi')
+                    ->label('Role')
                     ->required()
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('poin')
                     ->numeric()
                     ->required()
-                    ->label('Poin'),
+                    ->label('Points'),
             ]);
     }
 
@@ -52,12 +52,15 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('kegiatan')->searchable(),
-                Tables\Columns\TextColumn::make('tingkat_kegiatan')->sortable(),
-                Tables\Columns\TextColumn::make('peran_prestasi')->sortable(),
-                Tables\Columns\TextColumn::make('poin')->sortable(),
+                Tables\Columns\TextColumn::make('kegiatan')->searchable()
+                    ->label('Event'),
+                Tables\Columns\TextColumn::make('tingkat_kegiatan')->sortable()
+                    ->label('Level of Event'),
+                Tables\Columns\TextColumn::make('peran_prestasi')->sortable()
+                    ->label('Role'),
+                Tables\Columns\TextColumn::make('poin')->sortable()
+                    ->label('Points'),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable(),
             ])

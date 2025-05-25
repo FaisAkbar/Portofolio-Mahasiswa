@@ -29,13 +29,13 @@ class MahasiswaStatOverview extends BaseWidget
                             ->sum('ip_semester') / $khsCount,
                         2
                     )
-                    : '0.00' // Format 0 juga sebagai desimal
+                    : '0.00'
             ),
             Stat::make(
                 'Latest IPS',
                 $latestKhs
-                    ? $latestKhs->ip_semester // If there is a record, get the ip_semester
-                    : '0.00' // Return 0 if no khs are found
+                    ? $latestKhs->ip_semester
+                    : '0.00'
             ),
 
             Stat::make('Academic Point', Portfolio::query()

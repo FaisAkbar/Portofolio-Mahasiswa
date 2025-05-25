@@ -20,17 +20,13 @@ class RecapExporter extends Exporter
             -> label('Nama'),
             ExportColumn::make('nim_nip')
             ->label('NIM/NIP'),
-            // ipk
             ExportColumn::make('ipk')
             ->label('IPK')
             ->formatStateUsing(function ($state) {
                 return number_format($state, 2);
             }),
-            // academic_points
             ExportColumn::make('academic_points')
             ->label('Poin Akademik'),
-            
-            // non_academic_points
             ExportColumn::make('non_academic_points')
             ->label('Poin Non Akademik')
         ];

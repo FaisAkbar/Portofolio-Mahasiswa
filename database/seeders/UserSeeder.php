@@ -20,15 +20,14 @@ class UserSeeder extends Seeder
 
         foreach (array_slice($rows, 1) as $row) {
             $user = User::create([
-                'name'     => $row['A'], // Ganti sesuai urutan kolom
+                'name'     => $row['A'],
                 'nim_nip'  => $row['B'],
                 'email'    => $row['C'],
                 'password' => Hash::make($row['D'] ?? 'password123'),
             ]);
 
-            // Tambahkan roles jika ada
             if (!empty($row['E'])) {
-                $roleNames = explode(',', $row['E']); // Bisa banyak role dipisah koma
+                $roleNames = explode(',', $row['E']);
                 foreach ($roleNames as $roleName) {
                     $roleName = trim($roleName);
                     if (!empty($roleName)) {

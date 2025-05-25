@@ -8,10 +8,13 @@ use App\Models\Prodi;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class ProdiResource extends Resource
 {
@@ -25,7 +28,7 @@ class ProdiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('faculty_id')
-                    ->label('Faculty')    
+                    ->label('Departement')
                     ->relationship('faculty', 'faculty_name')
                     ->searchable()
                     ->preload()
@@ -34,7 +37,7 @@ class ProdiResource extends Resource
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('faculty_code')
-                            ->label('Faculty Code')
+                            ->label('Departement Code')
                             ->required(),
                         Forms\Components\Select::make('university_branch_id')
                             ->relationship('universityBranch', 'university_branch')
@@ -51,11 +54,11 @@ class ProdiResource extends Resource
                             ->required()
                     ])
                     ->required(),
-                
+
                 Forms\Components\TextInput::make('prodi_name')
                     ->required()
                     ->maxLength(255),
-                
+
                 Forms\Components\TextInput::make('prodi_code')
                     ->required()
                     ->maxLength(255),
@@ -66,25 +69,25 @@ class ProdiResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('faculty.universityBranch.university_branch')
-                    ->label('University Branch')
-                    ->searchable()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('faculty.universityBranch.university_branch')
+                //     ->label('University Branch')
+                //     ->searchable()
+                //     ->sortable(),
 
-                Tables\Columns\TextColumn::make('faculty.universityBranch.branch_code')
-                    ->label('Branch Code')
-                    ->searchable()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('faculty.universityBranch.branch_code')
+                //     ->label('Branch Code')
+                //     ->searchable()
+                //     ->sortable(),
 
-                Tables\Columns\TextColumn::make('faculty.faculty_name')
-                    ->label('Faculty Name')
-                    ->searchable()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('faculty.faculty_name')
+                //     ->label('Departement Name')
+                //     ->searchable()
+                //     ->sortable(),
 
-                Tables\Columns\TextColumn::make('faculty.faculty_code')
-                    ->label('Faculty Code')
-                    ->searchable()
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('faculty.faculty_code')
+                //     ->label('Departement Code')
+                //     ->searchable()
+                //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('prodi_name')
                     ->label('Prodi Name')
@@ -100,7 +103,16 @@ class ProdiResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+                    ->label('More actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -30,7 +30,7 @@ class KhsResource extends Resource
     protected static ?string $model = Khs::class;
     protected static ?string $navigationLabel = 'KHS';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    protected static ?string $navigationGroup = 'Data Mahasiswa';
+    protected static ?string $navigationGroup = 'Student Data';
 
     public static function form(Form $form): Form
     {
@@ -52,13 +52,11 @@ class KhsResource extends Resource
 
             Forms\Components\FileUpload::make('file_path')
                 ->label('Upload PDF')
-                ->disk('public') // pastikan 'public' sesuai dengan disk di config/filesystems.php
+                ->disk('public')
                 ->directory(function ($get) {
                     $userId = $get('user_id');
                     $user = \App\Models\User::find($userId);
                     $nim_nip = $user?->nim_nip ?? 'unknown';
-
-                    // Return nested directory path
                     return "khs/{$nim_nip}";
                 })
                 ->visibility('public')
@@ -82,7 +80,7 @@ class KhsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Nama Mahasiswa')
+                    ->label('Name')
                     ->sortable()
                     ->searchable()
                     ->visible($isProdi),
@@ -163,12 +161,9 @@ class KhsResource extends Resource
     {
         $user = Filament::auth()->user();
 
-        // Jika Prodi, tampilkan semua data
         if ($user->hasRole('prodi') || $user->hasRole('super_admin')) {
             return parent::getEloquentQuery();
         }
-
-        // Kalau bukan Prodi (termasuk mahasiswa), tampilkan data miliknya saja
         return parent::getEloquentQuery()->where('user_id', $user->id);
     }
 }

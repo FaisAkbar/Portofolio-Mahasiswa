@@ -18,8 +18,8 @@ class HistoryUploadTable extends BaseWidget
     {
         return $table
             ->query(
-                Portfolio::where('user_id', auth()->id())  // Get portfolios of the logged-in user
-                    ->orderBy('created_at', 'desc') // Order by created_at in descending order (latest on top)
+                Portfolio::where('user_id', auth()->id())
+                    ->orderBy('created_at', 'desc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('index')
@@ -38,8 +38,7 @@ class HistoryUploadTable extends BaseWidget
                     ->label('Status'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
-                    ->dateTime(), // Format the date column
-                // Add any additional columns you want from the Portfolio table
+                    ->dateTime(),
             ]);
     }
 }

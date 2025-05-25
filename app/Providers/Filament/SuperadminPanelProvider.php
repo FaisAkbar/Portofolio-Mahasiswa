@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -29,8 +30,19 @@ class SuperadminPanelProvider extends PanelProvider
             ->path('superadmin')
             ->login()
             ->colors([
+                // 'danger' => Color::Rose,
+                // 'gray' => Color::Gray,
+                // 'white' => Color::Red,
+                // 'info' => Color::Blue,
+                // 'primary' => Color::Indigo,
+                // 'success' => Color::Emerald,
+                // 'warning' => Color::Orange,
                 'primary' => Color::Amber,
             ])
+            ->defaultThemeMode(ThemeMode::Light)
+            ->brandLogo(asset('images/headinglogo.png'))
+            ->favicon(asset('images/logo.png'))
+            ->brandLogoHeight('125px')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -51,6 +63,7 @@ class SuperadminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
@@ -64,7 +77,9 @@ class SuperadminPanelProvider extends PanelProvider
                         value: true,
                         directory: 'avatars',
                         rules: 'mimes:jpeg,png|max:1024'
-                    )
+                    ),
+                \Hasnayeen\Themes\ThemesPlugin::make()
+                    // ->canViewThemesPage(fn () => auth()->user()?->hasRole('super_admin'))
             ]);
     }
 }
