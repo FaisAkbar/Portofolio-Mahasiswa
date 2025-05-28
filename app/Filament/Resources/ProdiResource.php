@@ -34,6 +34,7 @@ class ProdiResource extends Resource
                     ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('faculty_name')
+                            ->label('Departement')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('faculty_code')
