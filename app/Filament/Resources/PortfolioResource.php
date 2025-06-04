@@ -26,7 +26,7 @@ use Illuminate\Support\HtmlString;
 class PortfolioResource extends Resource
 {
     protected static ?string $model = Portfolio::class;
-    protected static ?string $navigationLabel = 'Portofolio';
+    protected static ?string $navigationLabel = 'Portfolio';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Student Data';
 
@@ -267,7 +267,8 @@ class PortfolioResource extends Resource
                 Tables\Actions\Action::make('Generate Portfolio')
                     ->color('gray')
                     ->url(fn() => route('download.portfolio'))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->visible($isMahasiswa),
                 ExportAction::make()->exporter(PortfolioExporter::class)->visible($isProdi)
             ])
             ->bulkActions([
