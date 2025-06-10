@@ -46,7 +46,7 @@ class UserResource extends Resource
                     ->password()
                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
                     ->dehydrated(fn($state) => filled($state))
-                    ->visibleOn('create')
+                    // ->visibleOn('create')
                     ->required(),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')

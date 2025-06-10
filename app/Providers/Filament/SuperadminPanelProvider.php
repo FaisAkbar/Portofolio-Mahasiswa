@@ -71,7 +71,7 @@ class SuperadminPanelProvider extends PanelProvider
                     ->setNavigationLabel('My Profile')
                     ->setIcon('heroicon-o-user')
                     ->shouldShowDeleteAccountForm(false)
-                    ->shouldShowEditPasswordForm(false)
+                    ->shouldShowEditPasswordForm(true)
                     ->shouldShowBrowserSessionsForm()
                     ->shouldShowAvatarForm(
                         value: true,
@@ -79,7 +79,7 @@ class SuperadminPanelProvider extends PanelProvider
                         rules: 'mimes:jpeg,png|max:1024'
                     ),
                 \Hasnayeen\Themes\ThemesPlugin::make()
-                    // ->canViewThemesPage(fn () => auth()->user()?->hasRole('super_admin'))
+                // ->canViewThemesPage(fn () => auth()->user()?->hasRole('super_admin'))
             ]);
     }
 }

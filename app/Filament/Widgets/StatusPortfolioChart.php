@@ -56,7 +56,7 @@ class StatusPortfolioChart extends ChartWidget
             'datasets' => [
                 [
                     'data' => array_column($chartData, 'value'),
-                    'backgroundColor' => ['#FF6384', '#36A2EB', '#FFCE56'],
+                    'backgroundColor' => ['#993a36', '#fec11b', '#132144'],
                 ],
             ],
             'labels' => array_column($chartData, 'label'),
