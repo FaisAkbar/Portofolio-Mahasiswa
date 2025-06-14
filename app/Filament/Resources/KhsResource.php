@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\Rules\Unique;
 
 class KhsResource extends Resource
 {
@@ -40,7 +41,18 @@ class KhsResource extends Resource
             Forms\Components\TextInput::make('semester')
                 ->label('Semester')
                 ->integer()
-                ->required(),
+                ->required()
+                ->unique(
+                    table: 'khs',
+                    column: 'semester',
+                    ignoreRecord: true,
+                    modifyRuleUsing: function (Unique $rule, $get) {
+                        return $rule->where('user_id', $get('user_id'));
+                    }
+                )
+                ->validationMessages([
+                    'unique' => 'You have already entered this semester. Please enter another semester.',
+                ]),
 
             Forms\Components\TextInput::make('ip_semester')
                 ->label('IP Semester')
@@ -113,6 +125,7 @@ class KhsResource extends Resource
                 //         return new HtmlString("<a href='{$url}' target='_blank' class='text-primary-600 hover:underline'>View PDF</a>");
                 //     }),
             ])
+            ->defaultSort('semester', 'asc')
             ->filters([
                 //
             ])

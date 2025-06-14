@@ -140,6 +140,7 @@ $image = "/images/logo.png";
         <table>
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>Name</th>
                     <th>NIM/NIP</th>
                     <th>IPK</th>
@@ -150,6 +151,7 @@ $image = "/images/logo.png";
             <tbody>
                 @foreach($recaps as $recap)
                     <tr>
+                        <td>{{ $loop->iteration }}</td>
                         <td>{{ $recap->name }}</td>
                         <td>{{ $recap->nim_nip }}</td>
                         <td>{{ number_format($recap->ipk, 2) }}</td>

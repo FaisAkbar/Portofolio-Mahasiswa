@@ -27,7 +27,8 @@ class RankingTable extends BaseWidget
             ->selectRaw('SUM(khs.ip_semester) as total_nilai')
             ->selectRaw('COUNT(khs.id) as total_khs')
             ->selectRaw('IF(COUNT(khs.id) > 0, SUM(khs.ip_semester) / COUNT(khs.id), 0) as ipk')
-            ->groupBy('users.id', 'users.name');
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('ipk');
 
         if (auth()->user()->hasRole('prodi')) {
             if ($yearCode) {
@@ -58,7 +59,9 @@ class RankingTable extends BaseWidget
                 Tables\Columns\TextColumn::make('ipk')
                     ->label('IPK')
                     ->sortable()
-                    ->numeric(decimalPlaces: 2),
+                    ->numeric(decimalPlaces: 2)
+                    // sort descending
+                    ->default('ipk', 'desc'),
             ]);
     }
 }

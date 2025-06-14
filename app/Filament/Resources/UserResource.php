@@ -76,6 +76,7 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('name', 'asc')
             ->filters([
                 //
             ])

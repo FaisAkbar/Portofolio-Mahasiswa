@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Prodi;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -17,6 +18,9 @@ class Dashboard extends \Filament\Pages\Dashboard
     
     public function filtersForm(Form $form): Form
     {
+        $user = Filament::auth()->user();
+        $isProdi = $user->hasRole('prodi') || $user->hasRole('super_admin');
+
         return $form
             ->schema([
                 Section::make('Filter Options')
@@ -44,7 +48,8 @@ class Dashboard extends \Filament\Pages\Dashboard
                             })
                             ->placeholder('Select Prodi Code'),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->visible($isProdi),
             ]);
     }
 }

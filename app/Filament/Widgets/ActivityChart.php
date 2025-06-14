@@ -65,16 +65,17 @@ class ActivityChart extends ChartWidget
 
     protected function getFilters(): ?array
     {
-        $khsYears = Khs::selectRaw('DISTINCT YEAR(created_at) as year')
-            ->orderBy('year', 'desc')
-            ->pluck('year')
-            ->toArray();
+        // $khsYears = Khs::selectRaw('DISTINCT YEAR(created_at) as year')
+        //     ->orderBy('year', 'desc')
+        //     ->pluck('year')
+        //     ->toArray();
 
-        $portfolioYears = Portfolio::selectRaw('DISTINCT YEAR(created_at) as year')
+        $portfolioYears = Portfolio::selectRaw('DISTINCT YEAR(tanggal_kegiatan) as year')
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->toArray();
-        $allYears = array_unique(array_merge($khsYears, $portfolioYears));
+        // $allYears = array_unique(array_merge($khsYears, $portfolioYears));
+        $allYears = array_unique($portfolioYears);
         $filters = [];
         foreach ($allYears as $year) {
             $filters[$year] = "$year";

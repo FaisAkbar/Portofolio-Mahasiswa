@@ -62,8 +62,8 @@ class PDFController extends Controller
         return $pdf->download('Portofolio.pdf');
     }
 
-    public function download_recap(){
-        $recaps = User::role('mahasiswa')
+    public function download_recap(Request $request){
+        $query = User::role('mahasiswa')
             ->select('users.id', 'users.name', 'users.nim_nip')
             ->addSelect([
                 'total_nilai' => Khs::selectRaw('SUM(khs.ip_semester)')
@@ -87,8 +87,27 @@ class PDFController extends Controller
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
-            ])
-            ->get();
+            ]);
+
+        // ** Apply filters if they exist in the request **
+        // 1. Year Code Filter
+        if ($request->filled('year_code')) {
+            $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$request->input('year_code')]);
+        }
+        // 2. Prodi Code Filter 
+        if ($request->filled('prodi_code')) {
+            $prodiCode = $request->input('prodi_code');
+            
+            $year = substr($prodiCode, 0, 2); 
+            
+            if (is_numeric($year) && (int)$year >= 24) {
+                $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
+            } else {
+                $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
+            }
+        }
+
+        $recaps = $query->get();
         $pdf = Pdf::loadView('recapPDF', compact('recaps'));
 
         return $pdf->download('Recap.pdf');

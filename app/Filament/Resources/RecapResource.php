@@ -151,7 +151,13 @@ class RecapResource extends Resource
             ->headerActions([
                 Tables\Actions\Action::make('Generate Recap')
                     ->color('gray')
-                    ->url(fn() => route('download.recap'))
+                    ->url(function ($livewire) {
+                        $filters = $livewire->tableFilters;
+                        return route('download.recap', [
+                            'year_code' => $filters['year_code']['value'] ?? null,
+                            'prodi_code' => $filters['prodi_code']['value'] ?? null,
+                        ]);
+                    })
                     ->openUrlInNewTab(),
                 ExportAction::make()->exporter(RecapExporter::class)
             ])
