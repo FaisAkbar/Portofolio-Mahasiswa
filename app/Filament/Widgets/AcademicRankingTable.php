@@ -26,7 +26,7 @@ class AcademicRankingTable extends BaseWidget
             ->select('users.id', 'users.name')
             ->leftJoin('portfolios', 'portfolios.user_id', '=', 'users.id')
             ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id');
-        if (auth()->user()->hasRole('prodi')) {
+        if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
             if ($yearCode) {
                 $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
             }

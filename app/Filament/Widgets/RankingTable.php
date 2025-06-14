@@ -27,10 +27,9 @@ class RankingTable extends BaseWidget
             ->selectRaw('SUM(khs.ip_semester) as total_nilai')
             ->selectRaw('COUNT(khs.id) as total_khs')
             ->selectRaw('IF(COUNT(khs.id) > 0, SUM(khs.ip_semester) / COUNT(khs.id), 0) as ipk')
-            ->groupBy('users.id', 'users.name')
-            ->orderByDesc('ipk');
+            ->groupBy('users.id', 'users.name');
 
-        if (auth()->user()->hasRole('prodi')) {
+        if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
             if ($yearCode) {
                 $query->whereRaw('SUBSTRING(users.nim_nip, 1, 2) = ?', [$yearCode]);
             }
@@ -48,11 +47,7 @@ class RankingTable extends BaseWidget
         return $table->query($query)
             ->columns([
                 Tables\Columns\TextColumn::make('index')
-                    ->label('No')
-                    ->state(function ($record, $livewire) {
-                        static $index = 0;
-                        return ++$index;
-                    }),
+                    ->rowIndex(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')
                     ->sortable(),
