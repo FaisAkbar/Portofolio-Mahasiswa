@@ -47,6 +47,7 @@ class RankingTable extends BaseWidget
         return $table->query($query)
             ->columns([
                 Tables\Columns\TextColumn::make('index')
+                    ->label('No')
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')
@@ -57,6 +58,8 @@ class RankingTable extends BaseWidget
                     ->numeric(decimalPlaces: 2)
                     // sort descending
                     ->default('ipk', 'desc'),
-            ]);
+            ])
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 25, 50]);
     }
 }

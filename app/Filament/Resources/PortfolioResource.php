@@ -29,7 +29,8 @@ class PortfolioResource extends Resource
     protected static ?string $navigationLabel = 'Portfolio';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Student Data';
-
+    protected static ?string $slug = 'portfolio';
+    
     public static function form(Form $form): Form
     {
         $user = Filament::auth()->user();
@@ -133,7 +134,7 @@ class PortfolioResource extends Resource
                 ->required(),
 
             Forms\Components\Select::make('jenis_pencapaian')
-                ->label('Type of Achievement')
+                ->label('Achievement Type')
                 ->required()
                 ->options([
                     'Akademik' => 'Akademik',
@@ -203,7 +204,7 @@ class PortfolioResource extends Resource
                     ->label('Event')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_pencapaian')
-                    ->label('Type of Achievement')
+                    ->label('Achievement Type')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.poin')
@@ -291,7 +292,6 @@ class PortfolioResource extends Resource
     {
         return [];
     }
-
     public static function getPages(): array
     {
         return [

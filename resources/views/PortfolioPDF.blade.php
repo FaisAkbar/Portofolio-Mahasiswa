@@ -269,7 +269,7 @@ $currentDate = $formatter->format(new \DateTime());
             </div>
         @endforeach
 
-        <div class="section">
+        <!-- <div class="section">
             <table class="final-table">
                 <tr>
                     <td>Malang, <?= $currentDate ?></td>
@@ -284,7 +284,7 @@ $currentDate = $formatter->format(new \DateTime());
                     <td>NIP. 2141720215</td>
                 </tr>
             </table>
-        </div>
+        </div> -->
     </div>
 </body>
 </html>

@@ -24,21 +24,17 @@ class HistoryUploadTable extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('index')
                     ->label('No')
-                    ->state(function ($record, $livewire) {
-                        static $index = 0;
-                        return ++$index;
-                    }),
+                    ->rowIndex(),
                 Tables\Columns\TextColumn::make('nama_kegiatan')
-                    ->label('Nama Kegiatan'),
+                    ->label('Event Name'),
                 Tables\Columns\TextColumn::make('jenis_pencapaian')
-                    ->label('Jenis Pencapaian'),
-                Tables\Columns\TextColumn::make('nama_kegiatan')
-                    ->label('Nama Kegiatan'),
+                    ->label('Achievement Type'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime(),
-            ]);
+            ])
+            ->defaultPaginationPageOption(5);
     }
 }

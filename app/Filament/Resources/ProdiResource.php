@@ -20,6 +20,8 @@ class ProdiResource extends Resource
 {
     protected static ?string $model = Prodi::class;
     protected static ?string $navigationLabel = 'Program Studi';
+    protected static ?string $pluralModelLabel = 'Program Studi';
+    protected static ?string $modelLabel = 'Program Studi';
     protected static ?string $navigationGroup = 'Admin Settings';
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
 

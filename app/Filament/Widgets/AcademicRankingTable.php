@@ -52,16 +52,15 @@ class AcademicRankingTable extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('index')
                     ->label('No')
-                    ->state(function ($record, $livewire) {
-                        static $index = 0;
-                        return ++$index;
-                    }),
+                    ->rowIndex(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_points')
                     ->label('Total Points')
                     ->sortable()
-            ]);
+            ])
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 25, 50]);
     }
 }

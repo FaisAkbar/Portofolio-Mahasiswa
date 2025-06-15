@@ -30,6 +30,8 @@ class KhsResource extends Resource
 {
     protected static ?string $model = Khs::class;
     protected static ?string $navigationLabel = 'KHS';
+    protected static ?string $pluralModelLabel = 'KHS';
+    protected static ?string $modelLabel = 'KHS';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationGroup = 'Student Data';
 
