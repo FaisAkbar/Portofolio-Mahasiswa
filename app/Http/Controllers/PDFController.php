@@ -19,7 +19,7 @@ class PDFController extends Controller
 
         // Portfolio
         $portfolios = Portfolio::where('user_id', $user->id)
-                        ->where('status', 'accepted')
+                        ->where('status', 'Diterima')
                         ->get();
         $usedKegiatans = Category::whereIn('id', $portfolios->pluck('kategori_id')->unique())
             ->pluck('kegiatan')
@@ -77,19 +77,18 @@ class PDFController extends Controller
                     ->limit(1),
             ])
             ->addSelect([
-                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points') 
+                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ])
             ->addSelect([
-                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
+                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ]);
 
-        // ** Apply filters if they exist in the request **
         // 1. Year Code Filter
         if ($request->filled('year_code')) {
             $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$request->input('year_code')]);

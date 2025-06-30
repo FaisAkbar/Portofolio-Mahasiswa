@@ -10,6 +10,8 @@ class ListProdis extends ListRecords
 {
     protected static string $resource = ProdiResource::class;
 
+    protected ?string $subheading = 'Manajemen Data Program Studi';
+
     protected function getHeaderActions(): array
     {
         return [

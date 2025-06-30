@@ -22,7 +22,7 @@ class ProdiResource extends Resource
     protected static ?string $navigationLabel = 'Program Studi';
     protected static ?string $pluralModelLabel = 'Program Studi';
     protected static ?string $modelLabel = 'Program Studi';
-    protected static ?string $navigationGroup = 'Admin Settings';
+    protected static ?string $navigationGroup = 'Pengaturan Admin';
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
     public static function form(Form $form): Form
@@ -30,26 +30,33 @@ class ProdiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('faculty_id')
-                    ->label('Departement')
+                    ->label('Jurusan')
+                    ->helperText('Pilih jurusan, atau buat baru jika belum ada')
                     ->relationship('faculty', 'faculty_name')
                     ->searchable()
                     ->preload()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('faculty_name')
-                            ->label('Departement')
+                            ->label('Jurusan')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('faculty_code')
-                            ->label('Departement Code')
+                            ->label('Kode Jurusan')
+                            ->helperText('Kode unik untuk jurusan ini biasanya terdapat pada kode NIM')
                             ->required(),
                         Forms\Components\Select::make('university_branch_id')
+                            ->label('Cabang Universitas')
+                            ->helperText('Pilih cabang universitas atau PSDKU')
                             ->relationship('universityBranch', 'university_branch')
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('university_branch')
+                                    ->label('Nama Cabang Universitas')
+                                    ->helperText('Contoh: PSDKU Pamekasan, PSDKU Kediri, dll.')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('branch_code')
-                                    ->label('Branch Code')
+                                    ->label('Kode Cabang Universitas')
+                                    ->helperText('Kode unik untuk cabang universitas ini')
                                     ->required(),
                             ])
                             ->searchable()
@@ -59,10 +66,14 @@ class ProdiResource extends Resource
                     ->required(),
 
                 Forms\Components\TextInput::make('prodi_name')
+                    ->label('Nama Program Studi')
+                    ->helperText('Contoh: Teknik Informatika, Sistem Informasi, dll.')
                     ->required()
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('prodi_code')
+                    ->label('Kode Program Studi')
+                    ->helperText('Kode unik untuk program studi ini, biasanya terdapat pada kode NIM')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -93,12 +104,12 @@ class ProdiResource extends Resource
                 //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('prodi_name')
-                    ->label('Prodi Name')
+                    ->label('Nama Program Studi')
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('prodi_code')
-                    ->label('Prodi Code')
+                    ->label('Kode Program Studi')
                     ->searchable()
                     ->sortable(),
             ])
@@ -107,11 +118,12 @@ class ProdiResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Detail Data'),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
@@ -121,7 +133,8 @@ class ProdiResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array

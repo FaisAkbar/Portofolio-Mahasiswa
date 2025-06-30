@@ -27,8 +27,11 @@ class SuperadminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('superadmin')
-            ->path('superadmin')
+            ->path('')
             ->login()
+            ->authMiddleware([
+                Authenticate::class,
+            ])
             ->colors([
                 // 'danger' => Color::Rose,
                 // 'gray' => Color::Gray,
@@ -68,7 +71,7 @@ class SuperadminPanelProvider extends PanelProvider
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 FilamentEditProfilePlugin::make()
-                    ->setNavigationLabel('My Profile')
+                    ->setNavigationLabel('Profil')
                     ->setIcon('heroicon-o-user')
                     ->shouldShowDeleteAccountForm(false)
                     ->shouldShowEditPasswordForm(true)

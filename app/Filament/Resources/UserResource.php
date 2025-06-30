@@ -22,39 +22,46 @@ use Illuminate\Support\Facades\Hash;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static ?string $navigationLabel = 'User';
+    protected static ?string $navigationLabel = 'Pengguna';
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Admin Settings';
+    protected static ?string $navigationGroup = 'Pengaturan Admin';
+    protected static ?string $pluralModelLabel = 'Pengguna';
+    protected static ?string $modelLabel = 'Pengguna';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Name')
-                    ->required(),
+                    ->label('Nama')
+                    ->required()
+                    ->helperText('Masukkan Nama lengkap pengguna'),
                 Forms\Components\TextInput::make('nim_nip')
                     ->label('NIM/NIP')
                     ->required()
+                    ->helperText('Masukkan Nomor Induk Mahasiswa/Nomor Induk Pegawai')
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->required(),
+                    ->required()
+                    ->helperText('Masukkan alamat email pengguna atau email kampus bagi mahasiswa'),
                 Forms\Components\TextInput::make('password')
-                    ->label('Password')
+                    ->label('Kata Sandi')
                     ->password()
                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
                     ->dehydrated(fn($state) => filled($state))
                     // ->visibleOn('create')
-                    ->required(),
+                    ->required()
+                    ->helperText('Masukkan kata sandi untuk pengguna baru. Kosongkan jika tidak ingin mengubah kata sandi pengguna yang sudah ada'),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
-                    ->label('Roles')
+                    ->label('Peran Pengguna')
                     ->multiple()
                     ->preload()
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->helperText('Pilih peran yang sesuai untuk pengguna')
             ]);
     }
 
@@ -64,7 +71,7 @@ class UserResource extends Resource
 
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nim_nip')
@@ -74,6 +81,8 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
+                    ->icon('heroicon-m-envelope')
+                    ->iconColor('primary')
                     ->sortable(),
             ])
             ->defaultSort('name', 'asc')
@@ -82,11 +91,12 @@ class UserResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Detail Data'),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')

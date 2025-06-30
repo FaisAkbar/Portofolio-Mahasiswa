@@ -33,7 +33,7 @@ class KhsResource extends Resource
     protected static ?string $pluralModelLabel = 'KHS';
     protected static ?string $modelLabel = 'KHS';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    protected static ?string $navigationGroup = 'Student Data';
+    protected static ?string $navigationGroup = 'Data Mahasiswa';
 
     public static function form(Form $form): Form
     {
@@ -42,6 +42,7 @@ class KhsResource extends Resource
 
             Forms\Components\TextInput::make('semester')
                 ->label('Semester')
+                ->helperText('Masukkan semester Anda')
                 ->integer()
                 ->required()
                 ->unique(
@@ -53,11 +54,12 @@ class KhsResource extends Resource
                     }
                 )
                 ->validationMessages([
-                    'unique' => 'You have already entered this semester. Please enter another semester.',
+                    'unique' => 'Anda sudah memasukkan semester ini. Silakan masukkan semester lain.',
                 ]),
 
             Forms\Components\TextInput::make('ip_semester')
                 ->label('IP Semester')
+                ->helperText('Masukkan IP Semester Anda')
                 ->numeric()
                 ->step(0.01)
                 ->minValue(0)
@@ -65,7 +67,8 @@ class KhsResource extends Resource
                 ->required(),
 
             Forms\Components\FileUpload::make('file_path')
-                ->label('Upload PDF')
+                ->label('Unggah PDF')
+                ->helperText('Unggah file KHS dalam format PDF. Maksimal ukuran 2MB.')
                 ->disk('public')
                 ->directory(function ($get) {
                     $userId = $get('user_id');
@@ -94,7 +97,7 @@ class KhsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->sortable()
                     ->searchable()
                     ->visible($isProdi),
@@ -129,20 +132,20 @@ class KhsResource extends Resource
             ])
             ->defaultSort('semester', 'asc')
             ->filters([
-                //
             ])
             ->actions([
                 ActionsActionGroup::make([
                     Tables\Actions\ViewAction::make()
                         ->url(fn($record) => Storage::disk('public')->url($record->file_path))
                         ->openUrlInNewTab()
-                        ->label('View PDF')
+                        ->label('Lihat PDF')
                         ->icon('heroicon-o-eye'),
-                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Detail Data'),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
@@ -154,7 +157,6 @@ class KhsResource extends Resource
                 ]),
             ])
             ->recordUrl(null);
-
     }
 
     public static function getRelations(): array
@@ -172,6 +174,7 @@ class KhsResource extends Resource
             'edit' => Pages\EditKhs::route('/{record}/edit'),
         ];
     }
+
     public static function getEloquentQuery(): Builder
     {
         $user = Filament::auth()->user();

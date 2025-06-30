@@ -13,6 +13,8 @@ class ProdiStateOverview extends BaseWidget
 {
     use HasWidgetShield, InteractsWithPageFilters;
 
+    protected ?string $heading = 'Statistik Halaman Prodi';
+
     protected function getStats(): array
     {
         $yearCode = $this->filters['year_code'] ?? null;
@@ -41,7 +43,7 @@ class ProdiStateOverview extends BaseWidget
         $academicStudentsQuery = User::query()
             ->role('mahasiswa')
             ->whereHas('portfolios', function ($query) {
-                $query->where('status', 'accepted');
+                $query->where('status', 'Diterima');
             });
         $academicStudentsQuery = applyFilters($academicStudentsQuery, $yearCode, $prodiCode);
         $academicStudents = $academicStudentsQuery
@@ -61,7 +63,7 @@ class ProdiStateOverview extends BaseWidget
         $nonAcademicStudentsQuery = User::query()
             ->role('mahasiswa')
             ->whereHas('portfolios', function ($query) {
-                $query->where('status', 'accepted');
+                $query->where('status', 'Diterima');
             });
         $nonAcademicStudentsQuery = applyFilters($nonAcademicStudentsQuery, $yearCode, $prodiCode);
         $nonAcademicStudents = $nonAcademicStudentsQuery
@@ -80,8 +82,8 @@ class ProdiStateOverview extends BaseWidget
             ->count();
         return [
             Stat::make('Total Mahasiswa', $totalMahasiswa),
-            Stat::make('Academic Students', $academicStudents),
-            Stat::make('Non-Academic Students', $nonAcademicStudents),
+            Stat::make('Mahasiswa Akademik', $academicStudents),
+            Stat::make('Mahasiswa Non-Akademik', $nonAcademicStudents),
         ];
     }
 }

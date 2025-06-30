@@ -26,11 +26,14 @@ use Illuminate\Support\HtmlString;
 class PortfolioResource extends Resource
 {
     protected static ?string $model = Portfolio::class;
-    protected static ?string $navigationLabel = 'Portfolio';
+    protected static ?string $navigationLabel = 'Portofolio';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Student Data';
-    protected static ?string $slug = 'portfolio';
-    
+    protected static ?string $navigationGroup = 'Data Mahasiswa';
+    protected static ?string $slug = 'portofolio';
+    protected static ?string $pluralModelLabel = 'Portofolio';
+    protected static ?string $modelLabel = 'Portofolio';
+    protected ?string $subheading = 'This is the subheading.';
+
     public static function form(Form $form): Form
     {
         $user = Filament::auth()->user();
@@ -39,18 +42,21 @@ class PortfolioResource extends Resource
 
         $formSchema = [
             Forms\Components\TextInput::make('nama_kegiatan')
-                ->label('Event Name')
+                ->label('Nama Kegiatan')
+                ->helperText('Masukkan nama kegiatan Anda')
                 ->required()
                 ->maxLength(255)
                 ->disabled($isProdi),
 
             Forms\Components\DatePicker::make('tanggal_kegiatan')
-                ->label('Event Date')
+                ->label('Tanggal Kegiatan')
+                ->helperText('Masukkan tanggal kegiatan Anda')
                 ->required()
                 ->disabled($isProdi),
 
             Forms\Components\Select::make('kegiatan')
-                ->label('Event')
+                ->label('Jenis Kegiatan')
+                ->helperText('Pilih jenis kegiatan yang sesuai')
                 ->options(fn() => Category::query()
                     ->select('id', 'kegiatan')
                     ->distinct()
@@ -72,7 +78,8 @@ class PortfolioResource extends Resource
                 }),
 
             Forms\Components\Select::make('tingkat_kegiatan')
-                ->label('Level of Event')
+                ->label('Tingkat Kegiatan')
+                ->helperText('Pilih tingkat kegiatan yang sesuai')
                 ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->select('tingkat_kegiatan')
@@ -94,7 +101,8 @@ class PortfolioResource extends Resource
                 }),
 
             Forms\Components\Select::make('peran_prestasi')
-                ->label('Role')
+                ->label('Peran Prestasi')
+                ->helperText('Pilih peran atau prestasi yang sesuai')
                 ->options(fn(Get $get) => Category::query()
                     ->where('kegiatan', $get('kegiatan'))
                     ->where('tingkat_kegiatan', $get('tingkat_kegiatan'))
@@ -124,7 +132,7 @@ class PortfolioResource extends Resource
                 ->preload(),
 
             Forms\Components\TextInput::make('poin')
-                ->label('Points')
+                ->label('Poin')
                 ->afterStateHydrated(function ($component, $get) {
                     $kategori_id = $get('kategori_id');
                     $category = Category::find($kategori_id);
@@ -134,7 +142,8 @@ class PortfolioResource extends Resource
                 ->required(),
 
             Forms\Components\Select::make('jenis_pencapaian')
-                ->label('Achievement Type')
+                ->label('Jenis Pencapaian')
+                ->helperText('Pilih jenis pencapaian yang sesuai')
                 ->required()
                 ->options([
                     'Akademik' => 'Akademik',
@@ -143,7 +152,8 @@ class PortfolioResource extends Resource
                 ->disabled($isProdi),
 
             Forms\Components\FileUpload::make('file_path')
-                ->label('Upload PDF')
+                ->label('Unggah PDF')
+                ->helperText('Unggah file serifikat atau dokumen pendukung dalam format PDF. Maksimal ukuran 2MB.')
                 ->disk('public')
                 ->directory(function ($get) {
                     $userId = $get('user_id');
@@ -171,15 +181,15 @@ class PortfolioResource extends Resource
             Forms\Components\Select::make('status')
                 ->label('Status')
                 ->options([
-                    'revise' => 'Revise',
-                    'on-review' => 'On Review',
-                    'accepted' => 'Accepted',
+                    'Revisi' => 'Revisi',
+                    'Dalam Tinjauan' => 'Dalam Tinjauan',
+                    'Diterima' => 'Diterima',
                 ])
                 ->required()
                 ->visible(!$isMahasiswa),
 
-            Forms\Components\TextArea::make('feedback')
-                ->label('Feedback')
+            Forms\Components\Textarea::make('feedback')
+                ->label('Umpan Balik')
                 ->required()
                 ->visible(!$isMahasiswa),
         ];
@@ -196,28 +206,35 @@ class PortfolioResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable()
                     ->visible($isProdi),
                 Tables\Columns\TextColumn::make('nama_kegiatan')
-                    ->label('Event')
+                    ->label('Nama Kegiatan')
+                    ->wrap()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_pencapaian')
-                    ->label('Achievement Type')
+                    ->label('Jenis Pencapaian')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.poin')
-                    ->label('Points')
+                    ->label('Poin')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->color(fn($record) => match ($record->status) {
+                        'Revisi' => 'danger',
+                        'Dalam Tinjauan' => 'primary',
+                        'Diterima' => 'success',
+                    })
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('feedback')
-                    ->label('Feedback')
+                    ->label('Umpan Balik')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal_kegiatan')
-                    ->label('Event Date')
+                    ->label('Tanggal Kegiatan')
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('file_path')
                 //     ->label('File PDF')
@@ -236,9 +253,9 @@ class PortfolioResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'revise' => 'Revise',
-                        'on-review' => 'On Review',
-                        'accepted' => 'Accepted',
+                        'Revisi' => 'Revisi',
+                        'Dalam Tinjauan' => 'Dalam Tinjauan',
+                        'Diterima' => 'Diterima',
                     ])
                     ->multiple(),
                 Tables\Filters\SelectFilter::make('jenis_pencapaian')
@@ -253,25 +270,29 @@ class PortfolioResource extends Resource
                     Tables\Actions\ViewAction::make()
                         ->url(fn($record) => Storage::disk('public')->url($record->file_path))
                         ->openUrlInNewTab()
-                        ->label('View PDF')
+                        ->label('Lihat PDF')
                         ->icon('heroicon-o-eye'),
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Detail Data'),
+                    Tables\Actions\EditAction::make()
+                        ->label($isMahasiswa ? 'Edit' : 'Validasi Data'),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
                     ->button()
             ])
             ->headerActions([
-                Tables\Actions\Action::make('Generate Portfolio')
+                Tables\Actions\Action::make('Unduh Portofolio')
                     ->color('gray')
                     ->url(fn() => route('download.portfolio'))
                     ->openUrlInNewTab()
                     ->visible($isMahasiswa),
-                ExportAction::make()->exporter(PortfolioExporter::class)->visible($isProdi)
+                ExportAction::make()->exporter(PortfolioExporter::class)
+                ->label('Ekspor Portofolio')
+                ->visible($isProdi)
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

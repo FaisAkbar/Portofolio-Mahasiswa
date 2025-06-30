@@ -12,8 +12,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class RankingTable extends BaseWidget
 {
-    protected static ?string $heading = 'IPK Ranking';
+    protected static ?string $heading = 'Tabel Peringkat IPK';
     protected static ?int $sort = 10;
+    protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
     use HasWidgetShield, InteractsWithPageFilters;
 
@@ -50,7 +51,7 @@ class RankingTable extends BaseWidget
                     ->label('No')
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('ipk')
                     ->label('IPK')
@@ -59,6 +60,7 @@ class RankingTable extends BaseWidget
                     // sort descending
                     ->default('ipk', 'desc'),
             ])
+            ->defaultSort('ipk', 'desc')
             ->defaultPaginationPageOption(5)
             ->paginated([5, 10, 25, 50]);
     }

@@ -13,7 +13,7 @@ class AverageIPSChart extends ChartWidget
 {
     use HasWidgetShield, InteractsWithPageFilters;
 
-    protected static ?string $heading = "Average IPS";
+    protected static ?string $heading = "Rata-rata IP Semester Mahasiswa";
     protected static ?int $sort = 8;
     protected int | string | array $columnSpan = 'full';
 

@@ -12,6 +12,8 @@ class MahasiswaStatOverview extends BaseWidget
 {
     use HasWidgetShield;
 
+    protected ?string $heading = 'Statistik Mahasiswa';
+
     protected static ?int $sort = 1;
 
     protected function getStats(): array
@@ -21,7 +23,7 @@ class MahasiswaStatOverview extends BaseWidget
 
         return [
             Stat::make(
-                'Average GPA',
+                'IPK',
                 $khsCount ?
                     number_format(
                         Khs::query()
@@ -32,26 +34,26 @@ class MahasiswaStatOverview extends BaseWidget
                     : '0.00'
             ),
             Stat::make(
-                'Latest IPS',
+                'IP Semester terakhir',
                 $latestKhs
                     ? $latestKhs->ip_semester
                     : '0.00'
             ),
 
-            Stat::make('Academic Point', Portfolio::query()
+            Stat::make('Poin Akademik', Portfolio::query()
                 ->where('user_id', auth()->id())
                 ->where('jenis_pencapaian', 'Akademik')
-                ->where('status', 'accepted')
+                ->where('status', 'Diterima')
                 ->with('category')
                 ->get()
                 ->sum(function ($portfolio) {
                     return $portfolio->category->poin;
                 })),
 
-            Stat::make('Non-Academic Point', Portfolio::query()
+            Stat::make('Poin Non-Akademik', Portfolio::query()
                 ->where('user_id', auth()->id())
                 ->where('jenis_pencapaian', 'Non-Akademik')
-                ->where('status', 'accepted')
+                ->where('status', 'Diterima')
                 ->with('category')
                 ->get()
                 ->sum(function ($portfolio) {

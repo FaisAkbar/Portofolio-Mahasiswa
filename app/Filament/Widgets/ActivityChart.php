@@ -12,7 +12,7 @@ class ActivityChart extends ChartWidget
 {
     use HasWidgetShield;
     
-    protected static ?string $heading = 'Activity';
+    protected static ?string $heading = 'Grafik Aktivitas';
 
     protected static ?int $sort = 4;
     protected function getData(): array

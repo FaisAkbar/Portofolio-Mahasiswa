@@ -15,7 +15,7 @@ class HistoryIPSChart extends ChartWidget
 {
     use HasWidgetShield;
 
-    protected static ?string $heading = "History IPS";
+    protected static ?string $heading = "Grafik IP Semester Mahasiswa";
     protected static ?int $sort = 5;
 
     protected function getData(): array

@@ -11,8 +11,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class NonAcademicRankingTable extends BaseWidget
 {
-    protected static ?string $heading = 'Non-Academic Ranking';
+    protected static ?string $heading = 'Tabel Peringkat Non-Akademik';
     protected static ?int $sort = 8;
+    protected static bool $isLazy = false;
     // protected int | string | array $columnSpan = 'full';
     use HasWidgetShield, InteractsWithPageFilters;
 
@@ -41,24 +42,26 @@ class NonAcademicRankingTable extends BaseWidget
 
         $query->selectRaw('
                 IFNULL(SUM(CASE 
-                    WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin 
+                    WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin 
                     ELSE 0 
                 END), 0) as total_points
             ')
-            ->groupBy('users.id', 'users.name')
-            ->orderByDesc('total_points');
+            ->groupBy('users.id', 'users.name');
+
         return $table->query($query)
             ->columns([
                 Tables\Columns\TextColumn::make('index')
                     ->label('No')
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_points')
-                    ->label('Total Points')
+                    ->label('Total Poin')
                     ->sortable()
+                    ->default('total_points', 'desc'),
             ])
+            ->defaultSort('total_points', 'desc')
             ->defaultPaginationPageOption(5)
             ->paginated([5, 10, 25, 50]);
     }

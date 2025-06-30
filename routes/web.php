@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Route::get('download-portfolio', [PDFController::class, 'download_portfolio'])->name('download.portfolio');
 Route::get('download-recap', [PDFController::class, 'download_recap'])->name('download.recap');

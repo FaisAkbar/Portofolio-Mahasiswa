@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('jenis_pencapaian');
             $table->string('file_path');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['revise', 'on-review', 'accepted'])->default('on-review');
+            $table->enum('status', ['Revisi', 'Dalam Tinjauan', 'Diterima'])->default('Dalam Tinjauan');
             $table->text('feedback')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();

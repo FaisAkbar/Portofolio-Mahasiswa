@@ -11,8 +11,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class HistoryUploadTable extends BaseWidget
 {
     use HasWidgetShield;
-
+    protected static ?string $heading = "Tabel Riwayat Unggah";
     protected static ?int $sort = 7;
+    protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
     public function table(Table $table): Table
     {

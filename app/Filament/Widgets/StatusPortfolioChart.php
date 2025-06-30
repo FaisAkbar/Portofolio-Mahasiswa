@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\DB;
 class StatusPortfolioChart extends ChartWidget
 {
     use HasWidgetShield, InteractsWithPageFilters;
-
-    protected static ?string $heading = 'Portfolio Status Distribution';
+    protected static ?string $heading = 'Distribusi Status Portofolio';
     protected int | string | array $columnSpan = 'full';
 
     protected static ?int $sort = 6;

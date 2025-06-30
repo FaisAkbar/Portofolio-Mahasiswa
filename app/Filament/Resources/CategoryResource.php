@@ -15,33 +15,41 @@ use Filament\Tables\Table;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-    protected static ?string $navigationLabel = 'Category';
+    protected static ?string $navigationLabel = 'Kategori Prestasi';
     protected static ?string $navigationIcon = 'heroicon-o-square-3-stack-3d';
-    protected static ?string $navigationGroup = 'Admin Settings';
+    protected static ?string $navigationGroup = 'Pengaturan Admin';
+    protected static ?string $pluralModelLabel = 'Kategori Prestasi';
+    protected static ?string $modelLabel = 'Kategori Prestasi';
+    protected static ?string $slug = 'kategori';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('kegiatan')
-                    ->label('Event')
+                    ->label('Nama Kegiatan')
                     ->required()
+                    ->helperText('Contoh: Lomba Karya Tulis Ilmiah')
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('tingkat_kegiatan')
-                    ->label('Level of Event')
+                    ->label('Tingkat Kegiatan')
                     ->required()
+                    ->helperText('Contoh: Nasional, Provinsi, atau Lokal')
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('peran_prestasi')
-                    ->label('Role')
+                    ->label('Peran Prestasi')
                     ->required()
+                    ->helperText('Contoh: Peserta, Juara 1, atau Juara Harapan')
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('poin')
                     ->numeric()
+                    ->minValue(1)
+                    ->helperText('Masukkan jumlah poin yang diberikan untuk kategori ini')
                     ->required()
-                    ->label('Points'),
+                    ->label('Poin'),
             ]);
     }
 
@@ -50,25 +58,28 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('kegiatan')->searchable()
-                    ->label('Event'),
+                    ->label('Nama Kegiatan')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('tingkat_kegiatan')->sortable()
-                    ->label('Level of Event'),
+                    ->label('Tingkat Kegiatan'),
                 Tables\Columns\TextColumn::make('peran_prestasi')->sortable()
-                    ->label('Role'),
+                    ->label('Peran Prestasi'),
                 Tables\Columns\TextColumn::make('poin')->sortable()
-                    ->label('Points'),
+                    ->label('Poin'),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Dibuat')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ViewAction::make()
+                        ->label('Lihat Detail Data'),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->label('More actions')
+                    ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')

@@ -29,7 +29,7 @@ class UserImporter extends Importer
                     'max:255',
                     Rule::unique('users')->ignore(request()->user()->id),
                 ])
-                ->helperText('NIM/NIP must be unique and not empty.'),
+                ->helperText('NIM/NIP harus unik dan tidak boleh kosong.'),
             
             ImportColumn::make('email')
                 ->requiredMapping()
@@ -39,7 +39,7 @@ class UserImporter extends Importer
                     'max:255',
                     Rule::unique('users')->ignore(request()->user()->id),
                 ])
-                ->helperText('Email must be valid and unique.'),
+                ->helperText('Email harus valid dan unik.'),
             
             ImportColumn::make('password')
                 ->requiredMapping()
@@ -50,13 +50,13 @@ class UserImporter extends Importer
                     }
                     return Hash::make($state);
                 })
-                ->helperText('Password must be hashed after import.'),
+                ->helperText('Password harus diisi dan minimal 8 karakter.'),
             
             ImportColumn::make('roles')
                 ->requiredMapping()
                 ->fillRecordUsing(function (User $record, string $state): void {
                 })
-                ->helperText('Role must be filled (e.g., mahasiswa or prodi).'),
+                ->helperText('Role harus diisi (misalnya, mahasiswa atau prodi).'),
         ];
     }
 
@@ -87,23 +87,23 @@ class UserImporter extends Importer
     public function getValidationMessages(): array
     {
         return [
-            'name.required' => 'The name column must not be empty.',
-            'nim_nip.required' => 'The NIM/NIP column must not be empty.',
-            'email.required' => 'The email address is required.',
-            'email.email' => 'Please enter a valid email address.',
-            'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 8 characters long.',
-            'nim_nip.unique' => 'The NIM/NIP has already been taken.',
-            'email.unique' => 'The email address is already in use.',
+            'name.required' => 'Kolom nama tidak boleh kosong.',
+            'nim_nip.required' => 'Kolom NIM/NIP tidak boleh kosong.',
+            'email.required' => 'Alamat email harus diisi.',
+            'email.email' => 'Silakan masukkan alamat email yang valid.',
+            'password.required' => 'Password harus diisi.',
+            'password.min' => 'Password harus minimal 8 karakter.',
+            'nim_nip.unique' => 'NIM/NIP sudah terdaftar.',
+            'email.unique' => 'Alamat email sudah digunakan.',
         ];
     }
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Your user import has completed and ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' imported.';
+        $body = 'Proses impor pengguna Anda telah selesai dan ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' berhasil diimpor.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to import.';
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' gagal diimpor.';
         }
 
         return $body;

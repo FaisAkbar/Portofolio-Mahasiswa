@@ -10,6 +10,8 @@ class ListCategories extends ListRecords
 {
     protected static string $resource = CategoryResource::class;
 
+    protected ?string $subheading = 'Halaman untuk menambah, mengelola, dan melihat semua kategori prestasi';
+
     protected function getHeaderActions(): array
     {
         return [

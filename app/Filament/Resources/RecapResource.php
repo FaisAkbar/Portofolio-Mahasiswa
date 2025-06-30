@@ -29,13 +29,13 @@ use Illuminate\Support\Facades\Log;
 class RecapResource extends Resource
 {
     protected static ?string $model = Recap::class;
-    protected static ?string $navigationLabel = 'Recap';
+    protected static ?string $navigationLabel = 'Laporan';
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    protected static ?string $navigationGroup = 'Student Data';
+    protected static ?string $navigationGroup = 'Data Mahasiswa';
 
     public static function getLabel(): string
     {
-        return 'Recap';
+        return 'Laporan';
     }
 
     public static function form(Form $form): Form
@@ -65,14 +65,14 @@ class RecapResource extends Resource
             ])
 
             ->addSelect([
-                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points') 
+                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points') 
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ])
 
             ->addSelect([
-                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "accepted" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
+                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
@@ -86,7 +86,7 @@ class RecapResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 
@@ -100,15 +100,16 @@ class RecapResource extends Resource
                     ->numeric(decimalPlaces: 2),
 
                 Tables\Columns\TextColumn::make('academic_points')
-                    ->label('Academic Points')
+                    ->label('Poin Akademik')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('non_academic_points')
-                    ->label('Non-Academic Points')
+                    ->label('Poin Non-Akademik')
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('year_code')
+                    ->label('Kode Angkatan')
                     ->options(function () {
                         return User::selectRaw('DISTINCT SUBSTRING(nim_nip, 1, 2) as year_code')
                             ->role('mahasiswa')
@@ -125,7 +126,7 @@ class RecapResource extends Resource
                     }),
 
                 SelectFilter::make('prodi_code')
-                    ->label('Prodi Code')
+                    ->label('Kode Program Studi')
                     ->options(function () {
                         $prodis = Prodi::all();
                         $options = [];
@@ -149,7 +150,7 @@ class RecapResource extends Resource
                     
             ])
             ->headerActions([
-                Tables\Actions\Action::make('Generate Recap')
+                Tables\Actions\Action::make('Unduh Laporan')
                     ->color('gray')
                     ->url(function ($livewire) {
                         $filters = $livewire->tableFilters;
