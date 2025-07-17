@@ -20,27 +20,20 @@ class StatusPortfolioChart extends ChartWidget
     protected function getData(): array
     {
         $user = auth()->user();
-        $yearCode = $this->filters['year_code'] ?? null;
-        $prodiCode = $this->filters['prodi_code'] ?? null;
+        $angkatan = $this->filters['angkatan'] ?? null;
+        $prodi = $this->filters['prodi'] ?? null;
         $portfolioQuery = Portfolio::select('status', DB::raw('count(*) as total'))
             ->groupBy('status');
         if ($user->hasRole('mahasiswa')) {
             $portfolioQuery->where('user_id', $user->id);
         }
-        if ($yearCode) {
-            $portfolioQuery->whereHas('user', function ($query) use ($yearCode) {
-                $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
-            });
-        }
-        if ($prodiCode) {
-            $portfolioQuery->whereHas('user', function ($query) use ($prodiCode) {
-                $year = substr($prodiCode, 0, 2);
-                if ((int)$year >= 24) {
-                    $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-                } else {
-                    $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
+        if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
+            if ($angkatan) {
+                $portfolioQuery->where('users.angkatan', $angkatan);
+            }
+            if ($prodi) {
+                $portfolioQuery->where('users.prodi', $prodi);
                 }
-            });
         }
         $portfolioStatuses = $portfolioQuery->get()->pluck('total', 'status')->toArray();
         $chartData = [];

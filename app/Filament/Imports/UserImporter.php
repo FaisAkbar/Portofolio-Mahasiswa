@@ -52,6 +52,22 @@ class UserImporter extends Importer
                 })
                 ->helperText('Password harus diisi dan minimal 8 karakter.'),
             
+            ImportColumn::make('prodi')
+                ->requiredMapping()
+                ->rules(['max:255'])
+                ->fillRecordUsing(function (User $record, string $state): void {
+                    $record->prodi = $state;
+                })
+                ->helperText('Program Studi harus diisi, kosongkan jika tidak relevan.'),
+            
+            ImportColumn::make('angkatan')
+                ->requiredMapping()
+                ->rules(['max:255'])
+                ->fillRecordUsing(function (User $record, string $state): void {
+                    $record->angkatan = $state;
+                })
+                ->helperText('Angkatan harus diisi, kosongkan jika tidak relevan.'),    
+            
             ImportColumn::make('roles')
                 ->requiredMapping()
                 ->fillRecordUsing(function (User $record, string $state): void {

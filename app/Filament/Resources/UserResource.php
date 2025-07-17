@@ -46,13 +46,18 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->helperText('Masukkan alamat email pengguna atau email kampus bagi mahasiswa'),
+                Forms\Components\TextInput::make('prodi')
+                    ->label('Program Studi')
+                    ->helperText('Masukkan Program Studi pengguna, kosongkan jika tidak relevan'),
+                Forms\Components\TextInput::make('angkatan')
+                    ->label('Angkatan')
+                    ->helperText('Masukkan Angkatan pengguna, kosongkan jika tidak relevan'),
                 Forms\Components\TextInput::make('password')
                     ->label('Kata Sandi')
                     ->password()
                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
                     ->dehydrated(fn($state) => filled($state))
                     // ->visibleOn('create')
-                    ->required()
                     ->helperText('Masukkan kata sandi untuk pengguna baru. Kosongkan jika tidak ingin mengubah kata sandi pengguna yang sudah ada'),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
@@ -83,6 +88,14 @@ class UserResource extends Resource
                     ->searchable()
                     ->icon('heroicon-m-envelope')
                     ->iconColor('primary')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('prodi')
+                    ->label('Program Studi')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('angkatan')
+                    ->label('Angkatan')
+                    ->searchable()
                     ->sortable(),
             ])
             ->defaultSort('name', 'asc')

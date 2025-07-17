@@ -9,6 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateKhs extends CreateRecord
 {
     protected static string $resource = KhsResource::class;
+
+    protected static bool $canCreateAnother = false;
     
     // public function getSubheading(): ?string
     // {

@@ -16,14 +16,14 @@ class ListKhs extends ListRecords
         $user = Filament::auth()->user();
 
         if ($user->hasRole('mahasiswa')) {
-            return 'Halaman untuk menambah, mengelola, dan memantau Kartu Hasil Studi Anda';
+            return 'Halaman ini menampilkan daftar nilai akademik Anda';
         }
 
         if ($user->hasRole('prodi') || $user->hasRole('super_admin')) {
-            return 'Halaman untuk meninjau data hasil studi mahasiswa';
+            return 'Halaman untuk mengelola daftar nilai akademik mahasiswa';
         }
 
-        return 'Daftar Portofolio';
+        return 'Daftar Nilai Akademik';
     }
 
     protected function getHeaderActions(): array

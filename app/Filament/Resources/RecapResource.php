@@ -65,14 +65,14 @@ class RecapResource extends Resource
             ])
 
             ->addSelect([
-                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points') 
+                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Hard Skill dan Soft Skill" THEN categories.poin ELSE 0 END), 0) as academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ])
 
             ->addSelect([
-                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
+                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Olahraga dan Seni" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
@@ -100,67 +100,63 @@ class RecapResource extends Resource
                     ->numeric(decimalPlaces: 2),
 
                 Tables\Columns\TextColumn::make('academic_points')
-                    ->label('Poin Akademik')
+                    ->label('Poin Hard Skill dan Soft Skill')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('non_academic_points')
-                    ->label('Poin Non-Akademik')
+                    ->label('Poin Olahraga dan Seni')
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('year_code')
-                    ->label('Kode Angkatan')
-                    ->options(function () {
-                        return User::selectRaw('DISTINCT SUBSTRING(nim_nip, 1, 2) as year_code')
-                            ->role('mahasiswa')
-                            ->pluck('year_code', 'year_code')
-                            
-                            ->toArray();
-                    })
+                SelectFilter::make('angkatan')
+                    ->label('Angkatan')
+                    ->options(fn () => User::whereNotNull('angkatan')
+                        ->select('angkatan')
+                        ->distinct()
+                        ->orderBy('angkatan', 'desc')
+                        ->pluck('angkatan', 'angkatan')
+                        ->toArray()
+                    )
                     ->query(function (Builder $query, $data) {
-                        if (empty($data['value']) || $data['value'] === '') {
-                            return $query;
+                        if (filled($data['value'])) {
+                            $query->where('angkatan', $data['value']);
                         }
-
-                        return $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$data['value']]);
+                        return $query;
                     }),
 
-                SelectFilter::make('prodi_code')
-                    ->label('Kode Program Studi')
-                    ->options(function () {
-                        $prodis = Prodi::all();
-                        $options = [];
-                        foreach ($prodis as $prodi) {
-                            $options[$prodi->prodi_code] = $prodi->prodi_code . ' - ' . $prodi->prodi_name;
+                SelectFilter::make('prodi')
+                    ->label('Program Studi')
+                    ->options(fn () => User::whereNotNull('prodi')
+                        ->select('prodi')
+                        ->distinct()
+                        ->orderBy('prodi')
+                        ->pluck('prodi', 'prodi')
+                        ->toArray()
+                    )
+                    ->query(function (Builder $query, $data) {
+                        if (filled($data['value'])) {
+                            $query->where('prodi', $data['value']);
                         }
-
-                        return $options;
-                    })->query(function (Builder $query, $data) {
-                        if (empty($data['value']) || $data['value'] === '') {
                             return $query;
-                        }
-                        $prodiCode = $data['value'];
-                        $year = substr($prodiCode, 0, 2);
-                        if ((int)$year >= 24) {
-                            return $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-                        } else {
-                            return $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
-                        }
-                    }), 
-                    
+                    }),
             ])
+            ->defaultSort('name', 'asc')
             ->headerActions([
                 Tables\Actions\Action::make('Unduh Laporan')
                     ->color('gray')
                     ->url(function ($livewire) {
                         $filters = $livewire->tableFilters;
                         return route('download.recap', [
-                            'year_code' => $filters['year_code']['value'] ?? null,
-                            'prodi_code' => $filters['prodi_code']['value'] ?? null,
+                            'angkatan' => $filters['angkatan']['value'] ?? null,
+                            'prodi' => $filters['prodi']['value'] ?? null,
                         ]);
                     })
                     ->openUrlInNewTab(),
-                ExportAction::make()->exporter(RecapExporter::class)
+                ExportAction::make()
+                    ->exporter(RecapExporter::class)
+                    ->label('Ekspor Laporan')
+                    ->filename(fn() => 'Laporan_Rekapitulasi_' . auth()->user()->nim_nip . '_' . now()->format('dmY'))
+
             ])
             ->recordUrl(null);
     }

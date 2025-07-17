@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\KhsImporter;
 use App\Filament\Resources\KhsResource\Pages;
 use App\Filament\Resources\KhsResource\RelationManagers;
 use App\Models\Khs;
@@ -11,12 +12,15 @@ use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
+use Filament\Forms\Get;
 use Filament\Notifications\Actions\ActionGroup as NotificationsActionsActionGroup;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup as ActionsActionGroup;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,22 +33,59 @@ use Illuminate\Validation\Rules\Unique;
 class KhsResource extends Resource
 {
     protected static ?string $model = Khs::class;
-    protected static ?string $navigationLabel = 'KHS';
-    protected static ?string $pluralModelLabel = 'KHS';
-    protected static ?string $modelLabel = 'KHS';
+    protected static ?string $navigationLabel = 'Akademik';
+    protected static ?string $pluralModelLabel = 'Nilai Akademik';
+    protected static ?string $modelLabel = 'Nilai Akademik';
+    protected static ?string $slug = 'akademik';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationGroup = 'Data Mahasiswa';
 
     public static function form(Form $form): Form
     {
+        $user = Filament::auth()->user();
+        $isMahasiswa = $user->hasRole('mahasiswa');
+        $isProdi = $user->hasRole('prodi') || $user->hasRole('super_admin');
         return $form->schema([
-            Hidden::make('user_id')->default(fn() => auth()->id()),
-
+            Forms\Components\Select::make('name')
+                ->label('Nama Mahasiswa')
+                ->placeholder('Pilih Mahasiswa')
+                ->searchable()
+                ->preload()
+                ->options(fn() => User::role('mahasiswa')
+                    ->select('id', 'name')
+                    ->distinct()
+                    ->pluck('name', 'id'))
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(function ($state, Set $set) {
+                    $user = \App\Models\User::find($state);
+                    $set('nim_nip', $user?->nim_nip);
+                    $set('user_id', $user?->id);
+                })
+                ->dehydrated(false),
+            Forms\Components\Hidden::make('user_id')
+                ->required()
+                ->reactive()
+                ->afterStateHydrated(function ($component, Get $get) {
+                    $user = \App\Models\User::find($get('user_id'));
+                    $component->state($user?->id);
+                }),
+            Forms\Components\TextInput::make('nim_nip')
+                ->label('NIM')
+                ->disabled()
+                ->reactive()
+                ->dehydrated(false)
+                ->afterStateHydrated(function ($component, Get $get) {
+                    $user = \App\Models\User::find($get('user_id'));
+                    $component->state($user?->nim_nip);
+                }),
             Forms\Components\TextInput::make('semester')
                 ->label('Semester')
-                ->helperText('Masukkan semester Anda')
+                ->helperText('Masukkan semester Mahasiswa')
                 ->integer()
                 ->required()
+                ->minValue(1)
+                ->maxValue(14)
                 ->unique(
                     table: 'khs',
                     column: 'semester',
@@ -59,33 +100,33 @@ class KhsResource extends Resource
 
             Forms\Components\TextInput::make('ip_semester')
                 ->label('IP Semester')
-                ->helperText('Masukkan IP Semester Anda')
+                ->helperText('Masukkan IP Semester Mahasiswa')
                 ->numeric()
                 ->step(0.01)
                 ->minValue(0)
                 ->maxValue(4.00)
                 ->required(),
 
-            Forms\Components\FileUpload::make('file_path')
-                ->label('Unggah PDF')
-                ->helperText('Unggah file KHS dalam format PDF. Maksimal ukuran 2MB.')
-                ->disk('public')
-                ->directory(function ($get) {
-                    $userId = $get('user_id');
-                    $user = \App\Models\User::find($userId);
-                    $nim_nip = $user?->nim_nip ?? 'unknown';
-                    return "khs/{$nim_nip}";
-                })
-                ->visibility('public')
-                ->acceptedFileTypes(['application/pdf'])
-                ->maxSize(2048)
-                ->getUploadedFileNameForStorageUsing(function ($file, $get) {
-                    $semester = $get('semester'); // ambil semester dari form
-                    $extension = $file->getClientOriginalExtension();
+            // Forms\Components\FileUpload::make('file_path')
+            //     ->label('Unggah PDF')
+            //     ->helperText('Unggah file KHS dalam format PDF. Maksimal ukuran 2MB.')
+            //     ->disk('public')
+            //     ->directory(function ($get) {
+            //         $userId = $get('user_id');
+            //         $user = \App\Models\User::find($userId);
+            //         $nim_nip = $user?->nim_nip ?? 'unknown';
+            //         return "khs/{$nim_nip}";
+            //     })
+            //     ->visibility('public')
+            //     ->acceptedFileTypes(['application/pdf'])
+            //     ->maxSize(2048)
+            //     ->getUploadedFileNameForStorageUsing(function ($file, $get) {
+            //         $semester = $get('semester'); // ambil semester dari form
+            //         $extension = $file->getClientOriginalExtension();
 
-                    return "{$semester}.{$extension}";
-                })
-                ->required(),
+            //         return "{$semester}.{$extension}";
+            //     })
+            //     ->required(),
         ]);
     }
 
@@ -131,7 +172,11 @@ class KhsResource extends Resource
                 //     }),
             ])
             ->defaultSort('semester', 'asc')
-            ->filters([
+            ->filters([])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(KhsImporter::class)
+                    ->visible($isProdi),
             ])
             ->actions([
                 ActionsActionGroup::make([

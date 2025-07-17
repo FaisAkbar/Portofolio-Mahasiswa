@@ -19,25 +19,15 @@ class AverageIPSChart extends ChartWidget
 
     protected function getData(): array
     {
-        $yearCode = $this->filters['year_code'] ?? null;
-        $prodiCode = $this->filters['prodi_code'] ?? null;
-        $user = auth()->user();
+        $angkatan = $this->filters['angkatan'] ?? null;
+        $prodi = $this->filters['prodi'] ?? null;
         $khsQuery = Khs::orderBy('semester', 'asc');
-        if ($user->hasRole('prodi')) {
-            if ($yearCode) {
-                $khsQuery->whereHas('user', function ($query) use ($yearCode) {
-                    $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
-                });
+        if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
+            if ($angkatan) {
+                $khsQuery->where('users.angkatan', $angkatan);
             }
-            if ($prodiCode) {
-                $khsQuery->whereHas('user', function ($query) use ($prodiCode) {
-                    $year = substr($prodiCode, 0, 2);
-                    if ((int)$year >= 24) {
-                        $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-                    } else {
-                        $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
-                    }
-                });
+            if ($prodi) {
+                $khsQuery->where('users.prodi', $prodi);
             }
         }
         $khsRecords = $khsQuery->get();

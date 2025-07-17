@@ -17,20 +17,16 @@ class ProdiStateOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $yearCode = $this->filters['year_code'] ?? null;
-        $prodiCode = $this->filters['prodi_code'] ?? null;
-        function applyFilters($query, $yearCode, $prodiCode)
+        $angkatan = $this->filters['angkatan'] ?? null;
+        $prodi = $this->filters['prodi'] ?? null;
+        function applyFilters($query, $angkatan, $prodi)
         {
-            if ($yearCode) {
-                $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
+            if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
+                if ($angkatan) {
+                    $query->where('users.angkatan', $angkatan);
             }
-
-            if ($prodiCode) {
-                $year = substr($prodiCode, 0, 2);
-                if ((int)$year >= 24) {
-                    $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-                } else {
-                    $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
+                if ($prodi) {
+                    $query->where('users.prodi', $prodi);
                 }
             }
 
@@ -38,22 +34,22 @@ class ProdiStateOverview extends BaseWidget
         }
         $totalMahasiswaQuery = User::query()
             ->role('mahasiswa');
-        $totalMahasiswaQuery = applyFilters($totalMahasiswaQuery, $yearCode, $prodiCode);
+        $totalMahasiswaQuery = applyFilters($totalMahasiswaQuery, $angkatan, $prodi);
         $totalMahasiswa = $totalMahasiswaQuery->count();
         $academicStudentsQuery = User::query()
             ->role('mahasiswa')
             ->whereHas('portfolios', function ($query) {
                 $query->where('status', 'Diterima');
             });
-        $academicStudentsQuery = applyFilters($academicStudentsQuery, $yearCode, $prodiCode);
+        $academicStudentsQuery = applyFilters($academicStudentsQuery, $angkatan, $prodi);
         $academicStudents = $academicStudentsQuery
             ->get()
             ->filter(function ($user) {
-                $academicPoints = $user->portfolios->where('jenis_pencapaian', 'Akademik')->sum(function ($portfolio) {
+                $academicPoints = $user->portfolios->where('jenis_pencapaian', 'Hard Skill dan Soft Skill')->sum(function ($portfolio) {
                     return $portfolio->category->poin;
                 });
 
-                $nonAcademicPoints = $user->portfolios->where('jenis_pencapaian', 'Non-Akademik')->sum(function ($portfolio) {
+                $nonAcademicPoints = $user->portfolios->where('jenis_pencapaian', 'Olahraga dan Seni')->sum(function ($portfolio) {
                     return $portfolio->category->poin;
                 });
 
@@ -65,15 +61,15 @@ class ProdiStateOverview extends BaseWidget
             ->whereHas('portfolios', function ($query) {
                 $query->where('status', 'Diterima');
             });
-        $nonAcademicStudentsQuery = applyFilters($nonAcademicStudentsQuery, $yearCode, $prodiCode);
+        $nonAcademicStudentsQuery = applyFilters($nonAcademicStudentsQuery, $angkatan, $prodi);
         $nonAcademicStudents = $nonAcademicStudentsQuery
             ->get()
             ->filter(function ($user) {
-                $academicPoints = $user->portfolios->where('jenis_pencapaian', 'Akademik')->sum(function ($portfolio) {
+                $academicPoints = $user->portfolios->where('jenis_pencapaian', 'Hard Skill dan Soft Skill')->sum(function ($portfolio) {
                     return $portfolio->category->poin;
                 });
 
-                $nonAcademicPoints = $user->portfolios->where('jenis_pencapaian', 'Non-Akademik')->sum(function ($portfolio) {
+                $nonAcademicPoints = $user->portfolios->where('jenis_pencapaian', 'Olahraga dan Seni')->sum(function ($portfolio) {
                     return $portfolio->category->poin;
                 });
 
@@ -82,8 +78,8 @@ class ProdiStateOverview extends BaseWidget
             ->count();
         return [
             Stat::make('Total Mahasiswa', $totalMahasiswa),
-            Stat::make('Mahasiswa Akademik', $academicStudents),
-            Stat::make('Mahasiswa Non-Akademik', $nonAcademicStudents),
+            Stat::make('Mahasiswa Hard Skill dan Soft Skill', $academicStudents),
+            Stat::make('Mahasiswa Olahraga dan Seni', $nonAcademicStudents),
         ];
     }
 }

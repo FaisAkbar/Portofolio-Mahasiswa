@@ -40,9 +40,9 @@ class MahasiswaStatOverview extends BaseWidget
                     : '0.00'
             ),
 
-            Stat::make('Poin Akademik', Portfolio::query()
+            Stat::make('Poin Hard Skill dan Soft Skill', Portfolio::query()
                 ->where('user_id', auth()->id())
-                ->where('jenis_pencapaian', 'Akademik')
+                ->where('jenis_pencapaian', 'Hard Skill dan Soft Skill')
                 ->where('status', 'Diterima')
                 ->with('category')
                 ->get()
@@ -50,9 +50,9 @@ class MahasiswaStatOverview extends BaseWidget
                     return $portfolio->category->poin;
                 })),
 
-            Stat::make('Poin Non-Akademik', Portfolio::query()
+            Stat::make('Poin Olahraga dan Seni', Portfolio::query()
                 ->where('user_id', auth()->id())
-                ->where('jenis_pencapaian', 'Non-Akademik')
+                ->where('jenis_pencapaian', 'Olahraga dan Seni')
                 ->where('status', 'Diterima')
                 ->with('category')
                 ->get()

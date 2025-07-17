@@ -23,7 +23,7 @@ class ListPortfolios extends ListRecords
             return 'Halaman untuk meninjau dan memverifikasi pencapaian mahasiswa';
         }
 
-        return 'Daftar Portofolio';
+        return 'Daftar Nilai Non Akademik';
     }
 
     protected function getHeaderActions(): array

@@ -20,8 +20,8 @@ class RankingTable extends BaseWidget
 
     public function table(Tables\Table $table): Tables\Table
     {
-        $yearCode = $this->filters['year_code'] ?? null;
-        $prodiCode = $this->filters['prodi_code'] ?? null;
+        $angkatan = $this->filters['angkatan'] ?? null;
+        $prodi = $this->filters['prodi'] ?? null;
         $query = User::role('mahasiswa')
             ->select('users.id', 'users.name')
             ->leftJoin('khs', 'khs.user_id', '=', 'users.id')
@@ -31,17 +31,11 @@ class RankingTable extends BaseWidget
             ->groupBy('users.id', 'users.name');
 
         if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
-            if ($yearCode) {
-                $query->whereRaw('SUBSTRING(users.nim_nip, 1, 2) = ?', [$yearCode]);
+            if ($angkatan) {
+                $query->where('users.angkatan', $angkatan);
             }
-
-            if ($prodiCode) {
-                $year = substr($prodiCode, 0, 2);
-                if ((int)$year >= 24) {
-                    $query->whereRaw('SUBSTRING(users.nim_nip, 6, 3) = ?', [$prodiCode]);
-                } else {
-                    $query->whereRaw('SUBSTRING(users.nim_nip, 4, 3) = ?', [$prodiCode]);
-                }
+            if ($prodi) {
+                $query->where('users.prodi', $prodi);
             }
         }
 

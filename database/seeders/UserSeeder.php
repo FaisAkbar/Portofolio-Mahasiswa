@@ -23,11 +23,13 @@ class UserSeeder extends Seeder
                 'name'     => $row['A'],
                 'nim_nip'  => $row['B'],
                 'email'    => $row['C'],
+                'prodi'    => $row['E'],
+                'angkatan' => $row['F'],
                 'password' => Hash::make($row['D'] ?? 'password123'),
             ]);
 
-            if (!empty($row['E'])) {
-                $roleNames = explode(',', $row['E']);
+            if (!empty($row['G'])) {
+                $roleNames = explode(',', $row['G']);
                 foreach ($roleNames as $roleName) {
                     $roleName = trim($roleName);
                     if (!empty($roleName)) {

@@ -26,9 +26,9 @@ class RecapExporter extends Exporter
                 return number_format($state, 2);
             }),
             ExportColumn::make('academic_points')
-            ->label('Poin Akademik'),
+            ->label('Poin Hard Skill dan Soft Skill'),
             ExportColumn::make('non_academic_points')
-            ->label('Poin Non Akademik')
+            ->label('Poin Olahraga dan Seni')
         ];
     }
 

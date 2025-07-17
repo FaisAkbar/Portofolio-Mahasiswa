@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('semester');
             $table->decimal('ip_semester', 3, 2);
-            $table->string('file_path');
+            // $table->string('file_path');
             $table->timestamps();
         });
     }

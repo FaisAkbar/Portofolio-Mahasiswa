@@ -32,30 +32,7 @@ class PDFController extends Controller
             ? round($khsRecords->avg('ip_semester'), 2)
             : 0.0;
 
-        // Prodi Name
-        $prodiName = '';
-        $nim = $user->nim_nip;
-        $nimLength = strlen($nim);
-        if ($nimLength >= 6) {
-            $prodis = Prodi::all();
-
-            foreach ($prodis as $p) {
-                $code = $p->prodi_code;
-                $year = (int)substr($code, 0, 2);
-
-                if ($year >= 24 && $nimLength >= 8) {
-                    $nimProdiCode = substr($nim, 5, 3);
-                } else {
-                    $nimProdiCode = substr($nim, 3, 3);
-                }
-
-                if ($code === $nimProdiCode) {
-                    $prodi = $p;
-                    break;
-                }
-            }
-        }
-        $prodiName = isset($prodi) ? $prodi->prodi_name : 'Prodi Tidak Ditemukan';
+        $prodiName = $user->prodi ?? 'Prodi Tidak Diketahui';
 
         // Download the PDF
         $pdf = Pdf::loadView('portfolioPDF', compact('portfolios', 'user', 'ipk', 'prodiName', 'usedKegiatans'));
@@ -77,33 +54,26 @@ class PDFController extends Controller
                     ->limit(1),
             ])
             ->addSelect([
-                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin ELSE 0 END), 0) as academic_points')
+                'academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Hard Skill dan Soft Skill" THEN categories.poin ELSE 0 END), 0) as academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ])
             ->addSelect([
-                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Non-Akademik" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
+                'non_academic_points' => Portfolio::selectRaw('IFNULL(SUM(CASE WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Olahraga dan Seni" THEN categories.poin ELSE 0 END), 0) as non_academic_points')
                     ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id')
                     ->whereColumn('portfolios.user_id', 'users.id')
                     ->limit(1),
             ]);
 
-        // 1. Year Code Filter
-        if ($request->filled('year_code')) {
-            $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$request->input('year_code')]);
+        // 1. Angkatan Filter
+        if ($request->filled('angkatan')) {
+            $query->where('angkatan', $request->input('angkatan'));
         }
-        // 2. Prodi Code Filter 
-        if ($request->filled('prodi_code')) {
-            $prodiCode = $request->input('prodi_code');
-            
-            $year = substr($prodiCode, 0, 2); 
-            
-            if (is_numeric($year) && (int)$year >= 24) {
-                $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-            } else {
-                $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
-            }
+
+        // 2. Prodi Filter
+        if ($request->filled('prodi')) {
+            $query->where('prodi', $request->input('prodi'));
         }
 
         $recaps = $query->get();

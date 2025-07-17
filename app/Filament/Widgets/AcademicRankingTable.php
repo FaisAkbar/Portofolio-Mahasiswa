@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class AcademicRankingTable extends BaseWidget
 {
-    protected static ?string $heading = 'Tabel Peringkat Akademik';
+    protected static ?string $heading = 'Peringkat Hard Skill dan Soft Skill';
     protected static ?int $sort = 9;
     protected static bool $isLazy = false;
     // protected int | string | array $columnSpan = 'full';
@@ -20,30 +20,25 @@ class AcademicRankingTable extends BaseWidget
 
     public function table(Tables\Table $table): Tables\Table
     {
-        $yearCode = $this->filters['year_code'] ?? null;
-        $prodiCode = $this->filters['prodi_code'] ?? null;
+        $angkatan = $this->filters['angkatan'] ?? null;
+        $prodi = $this->filters['prodi'] ?? null;
 
         $query = User::role('mahasiswa')
             ->select('users.id', 'users.name')
             ->leftJoin('portfolios', 'portfolios.user_id', '=', 'users.id')
             ->leftJoin('categories', 'categories.id', '=', 'portfolios.kategori_id');
         if (auth()->user()->hasRole('prodi') || auth()->user()->hasRole('super_admin')) {
-            if ($yearCode) {
-                $query->whereRaw('SUBSTRING(nim_nip, 1, 2) = ?', [$yearCode]);
+            if ($angkatan) {
+                $query->where('users.angkatan', $angkatan);
             }
-            if ($prodiCode) {
-                $year = substr($prodiCode, 0, 2);
-                if ((int)$year >= 24) {
-                    $query->whereRaw('SUBSTRING(nim_nip, 6, 3) = ?', [$prodiCode]);
-                } else {
-                    $query->whereRaw('SUBSTRING(nim_nip, 4, 3) = ?', [$prodiCode]);
-                }
+            if ($prodi) {
+                $query->where('users.prodi', $prodi);
             }
         }
 
         $query->selectRaw('
                 IFNULL(SUM(CASE 
-                    WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Akademik" THEN categories.poin 
+                    WHEN portfolios.status = "Diterima" AND portfolios.jenis_pencapaian = "Hard Skill dan Soft skill" THEN categories.poin 
                     ELSE 0 
                 END), 0) as total_points
             ')

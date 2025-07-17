@@ -20,35 +20,40 @@ class Dashboard extends \Filament\Pages\Dashboard
     {
         $user = Filament::auth()->user();
         $isProdi = false;
-        if($user) {
+        if ($user) {
             $isProdi = $user->hasRole('prodi') || $user->hasRole('super_admin');
         }
         return $form
             ->schema([
                 Section::make('Filter')
                     ->schema([
-                        Select::make('year_code')
-                            ->label('Kode Angkatan')
+                        Select::make('angkatan')
+                            ->label('Angkatan')
                             ->options(function () {
-                                return User::selectRaw('DISTINCT SUBSTRING(nim_nip, 1, 2) as year_code')
-                                    ->role('mahasiswa')
-                                    ->pluck('year_code', 'year_code')
+                                return User::query()
+                                    ->whereNotNull('angkatan')
+                                    ->where('angkatan', '!=', '')
+                                    ->select('angkatan')
+                                    ->distinct()
+                                    ->orderBy('angkatan', 'desc')
+                                    ->pluck('angkatan', 'angkatan')
                                     ->toArray();
                             })
-                            ->placeholder('Pilih Kode Angkatan'),
+                            ->placeholder('Pilih Angkatan'),
 
-                        Select::make('prodi_code')
-                            ->label('Kode Program Studi')
+                        Select::make('prodi')
+                            ->label('Program Studi')
                             ->options(function () {
-                                $prodis = Prodi::all();
-                                $options = [];
-                                foreach ($prodis as $prodi) {
-                                    $options[$prodi->prodi_code] = $prodi->prodi_code . ' - ' . $prodi->prodi_name;
-                                }
-
-                                return $options;
+                                return User::query()
+                                    ->whereNotNull('prodi')
+                                    ->where('prodi', '!=', '')
+                                    ->select('prodi')
+                                    ->distinct()
+                                    ->orderBy('prodi')
+                                    ->pluck('prodi', 'prodi')
+                                    ->toArray();
                             })
-                            ->placeholder('Pilih Kode Program Studi'),
+                            ->placeholder('Pilih Program Studi'),
                     ])
                     ->columns(2)
                     ->visible($isProdi),

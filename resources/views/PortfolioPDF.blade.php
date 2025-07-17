@@ -250,6 +250,7 @@ $currentDate = $formatter->format(new \DateTime());
                             <tr>
                                 <th class="no-col">No</th>
                                 <th>Nama Kegiatan</th>
+                                <th>Poin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -260,8 +261,9 @@ $currentDate = $formatter->format(new \DateTime());
 
                             @for ($i = 0; $i < $maxRows; $i++)
                                 <tr>
-                                    <td class="row-number">{{ $i + 1 }}</td>
+                                    <td class="row-number" style="text-align: center; vertical-align: middle;">{{ $i + 1 }}</td>
                                     <td>{{ $items[$i]->nama_kegiatan ?? '' }}</td>
+                                    <td style="text-align: center; vertical-align: middle;">{{ $items[$i]->category->poin ?? '' }}</td>
                                 </tr>
                             @endfor
                         </tbody>

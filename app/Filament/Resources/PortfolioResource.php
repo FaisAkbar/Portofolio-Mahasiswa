@@ -26,13 +26,13 @@ use Illuminate\Support\HtmlString;
 class PortfolioResource extends Resource
 {
     protected static ?string $model = Portfolio::class;
-    protected static ?string $navigationLabel = 'Portofolio';
+    protected static ?string $navigationLabel = 'Non Akademik';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Data Mahasiswa';
-    protected static ?string $slug = 'portofolio';
-    protected static ?string $pluralModelLabel = 'Portofolio';
-    protected static ?string $modelLabel = 'Portofolio';
-    protected ?string $subheading = 'This is the subheading.';
+    protected static ?string $slug = 'non-akademik';
+    protected static ?string $pluralModelLabel = 'Nilai Non Akademik';
+    protected static ?string $modelLabel = 'Nilai Non Akademik';
+    // protected ?string $subheading = 'This is the subheading.';
 
     public static function form(Form $form): Form
     {
@@ -146,8 +146,8 @@ class PortfolioResource extends Resource
                 ->helperText('Pilih jenis pencapaian yang sesuai')
                 ->required()
                 ->options([
-                    'Akademik' => 'Akademik',
-                    'Non-Akademik' => 'Non-Akademik',
+                    'Hard Skill dan Soft Skill' => 'Hard Skill dan Soft Skill',
+                    'Olahraga dan Seni' => 'Olahraga dan Seni',
                 ])
                 ->disabled($isProdi),
 
@@ -260,8 +260,8 @@ class PortfolioResource extends Resource
                     ->multiple(),
                 Tables\Filters\SelectFilter::make('jenis_pencapaian')
                     ->options([
-                        'Akademik' => 'Akademik',
-                        'Non-Akademik' => 'Non Akademik',
+                        'Hard Skill dan Soft Skill' => 'Hard Skill dan Soft Skill',
+                        'Olahraga dan Seni' => 'Olahraga dan Seni',
                     ])
                     ->multiple()
             ])
@@ -290,8 +290,10 @@ class PortfolioResource extends Resource
                     ->url(fn() => route('download.portfolio'))
                     ->openUrlInNewTab()
                     ->visible($isMahasiswa),
-                ExportAction::make()->exporter(PortfolioExporter::class)
-                ->label('Ekspor Portofolio')
+                ExportAction::make()
+                    ->exporter(PortfolioExporter::class)
+                    ->filename(fn() => 'NonAkademik_' . auth()->user()->nim_nip . '_' . now()->format('dmY'))
+                ->label('Ekspor Data Non Akademik')
                 ->visible($isProdi)
             ])
             ->bulkActions([
