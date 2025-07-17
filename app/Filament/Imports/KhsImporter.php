@@ -27,7 +27,7 @@ class KhsImporter extends Importer
                     Rule::exists('users', 'nim_nip'),
                 ])
                 ->fillRecordUsing(fn () => null)
-                ->helperText('NIM/NIP harus valid dan sudah terdaftar.'),
+                ->helperText('NIM harus valid dan sudah terdaftar.'),
             ImportColumn::make('semester')
                 ->requiredMapping()
                 ->numeric()
@@ -45,7 +45,7 @@ class KhsImporter extends Importer
 
         if (!$user) {
             throw ValidationException::withMessages([
-                'nim_nip' => 'NIM/NIP tidak ditemukan.',
+                'nim_nip' => 'NIM tidak ditemukan.',
             ]);
         }
 
@@ -76,8 +76,8 @@ class KhsImporter extends Importer
     public function getValidationMessages(): array
     {
         return [
-            'nim_nip.required' => 'Kolom NIM/NIP tidak boleh kosong.',
-            'nim_nip.exists' => 'NIM/NIP tidak ditemukan dalam data pengguna.',
+            'nim_nip.required' => 'Kolom NIM tidak boleh kosong.',
+            'nim_nip.exists' => 'NIM tidak ditemukan dalam data pengguna.',
             'semester.required' => 'Semester wajib diisi.',
             'semester.integer' => 'Semester harus berupa angka.',
             'semester.between' => 'Semester harus antara 1 sampai 14.',
@@ -89,7 +89,7 @@ class KhsImporter extends Importer
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Impor KHS Anda telah selesai dengan ' . number_format($import->successful_rows) . ' ' . str('baris')->plural($import->successful_rows) . ' berhasil diimpor.';
+        $body = 'Impor Nilai Akademik Mahasiswa telah selesai dengan ' . number_format($import->successful_rows) . ' ' . str('baris')->plural($import->successful_rows) . ' berhasil diimpor.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
             $body .= ' ' . number_format($failedRowsCount) . ' ' . str('baris')->plural($failedRowsCount) . ' gagal diimpor.';
